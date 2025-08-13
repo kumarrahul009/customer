@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
+
+const API_BASE = "http://localhost:5000/api/onboarding"; // change to your backend URL
 import { useRef } from "react";
 
 import { useNavigate } from "react-router-dom";
@@ -10,6 +13,12 @@ import photoUploadIcon from "../assets/imges/camera.svg";
 import cameraIcon from "../assets/imges/upload.svg";
 import editIcon from "../assets/imges/Edit.png";
 import tick from "../assets/imges/tick.jpg";
+import { submitStep1 } from "../api/onboarding";
+import { sendOTP } from "../api/onboarding";
+import { saveAddress } from "../api/onboarding";
+import { uploadDocuments } from "../api/onboarding";
+import { setSecurity } from "../api/onboarding";
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -143,10 +152,35 @@ const verifyOTP = () => {
 
   {step === 1 && (
   <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      setStep(2);
-    }}
+   onSubmit={async (e) => {
+  e.preventDefault();
+   console.log("➡️ Step 1 payload:", {
+    email,
+    password,
+    confirmPassword,
+    agreed,
+  });
+
+  // ✅ Check before calling backend
+  if (!email || !password || !confirmPassword || !agreed) {
+    alert("Please fill all fields and agree to terms");
+    return;
+  }
+   if (password !== confirmPassword) {
+    alert("❌ Password and Confirm Password do not match");
+    return;
+  }
+  try {
+   const res = await submitStep1({ email, password, confirmPassword, agreed });
+
+    console.log("✅ Step 1 response:", res.data);
+
+    setStep(2); // go to next step
+  } catch (err) {
+    console.error("❌ Step 1 error:", err.response?.data || err.message);
+    alert(err.response?.data?.msg || "Step 1 failed");
+  }
+}}
     className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-emerald-100"
   >
     <div className="flex justify-between items-center mb-4">
@@ -268,10 +302,24 @@ const verifyOTP = () => {
 
 {step === 2 && (
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setStep(3);
-          }}
+          onSubmit={async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post(`${API_BASE}/step2`, {
+      full_name: fullName,
+      dob,
+      gender,
+    });
+  if (res.data.msg === "Step 2 success") {
+      setStep(3);
+    } else {
+      alert(res.data.msg || "Step 2 failed");
+    }
+  } catch (err) {
+    console.error("❌ Step 2 error:", err.response?.data || err.message);
+    alert(err.response?.data?.msg || "Server error during personal info step");
+  }
+}}
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
           <div className="flex justify-between items-center mb-4">
@@ -413,7 +461,29 @@ const verifyOTP = () => {
           className="w-full px-4 py-2 border border-gray-300 rounded"
         />
         <button
-          type="button"
+         type="button"
+ onClick={async () => {
+  if (mobile.length !== 10) {
+    alert("Enter a valid 10-digit mobile number");
+    return;
+  }
+
+  try {
+    const res = await sendOTP({ mobile }); // from api.js
+
+    console.log("✅ OTP response:", res.data);
+
+    if (res.data.msg === "OTP sent successfully") {
+      setShowOtp(true);
+      alert("OTP sent successfully ✅");
+    } else {
+      alert(res.data.msg || "Failed to send OTP");
+    }
+  } catch (err) {
+    console.error("❌ OTP send error:", err.response?.data || err.message);
+    alert(err.response?.data?.msg || "Failed to send OTP");
+  }
+}}
           className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
         >
           Send OTP
@@ -440,6 +510,16 @@ const verifyOTP = () => {
         ))}
         <button
           type="button"
+        onClick={async () => {
+          try {
+            const res = await axios.post(`${API_BASE}/send-otp`, { mobile });
+            if (res.data.success) {
+              alert("OTP resent ✅");
+            }
+          } catch (err) {
+            alert("Failed to resend OTP");
+          }
+        }}
           className="text-sm text-blue-600 hover:underline ml-auto"
         >
           Resend OTP
@@ -480,10 +560,25 @@ const verifyOTP = () => {
 
 {step === 4 && (
   <form
-    onSubmit={(e) => {
-      e.preventDefault();
+   onSubmit={async (e) => {
+  e.preventDefault();
+  try {
+    const res = await saveAddress({
+      address1,
+      address2,
+      city,
+      state,
+      postal,
+      country,
+    });
+    console.log("✅ Address step response:", res.data);
       setStep(5);
-    }}
+  } catch (err) {
+    console.error("❌ Address step error:", err.response?.data || err.message);
+    alert(err.response?.data?.msg || "Address step failed");
+  }
+}}
+
     className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
   >
     <div className="flex justify-between items-center mb-4">
@@ -605,10 +700,28 @@ const verifyOTP = () => {
 
 {step === 5 && (
   <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      setStep(6);
-    }}
+    onSubmit={async (e) => {
+  e.preventDefault();
+
+  if (!idFile || !selfie) {
+    alert("Please upload both ID and selfie");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("id_file", idFile);
+  formData.append("selfie", selfie);
+
+  try {
+    const res = await uploadDocuments(formData);
+    console.log("✅ Upload success:", res.data);
+    setStep(6); // move to next step
+  } catch (err) {
+    console.error("❌ Upload error:", err.response?.data || err.message);
+    alert(err.response?.data?.msg || "File upload failed");
+  }
+}}
+
     className="w-125 max-w-2xl"
   >
     <div className="border border-gray-300 rounded-2xl p-6 shadow-md bg-white">
@@ -661,7 +774,7 @@ const verifyOTP = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => document.getElementById("fileUpload").click()}
+                  onClick={() => document.getElementById("fileUploadSelfie").click()}
                   className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
                 >
                   Browse Files
@@ -689,7 +802,7 @@ const verifyOTP = () => {
           capture="user"
           className="hidden"
           id="cameraUploadSelfie"
-          onChange={(e) => setIdFile(e.target.files[0])}
+          onChange={(e) => setSelfie(e.target.files[0])}
         />
 
         {/* Browse file input */}
@@ -697,14 +810,13 @@ const verifyOTP = () => {
           type="file"
           accept="image/*,.pdf"
           className="hidden"
-          id="fileUpload"
-          onChange={(e) => setIdFile(e.target.files[0])}
+          id="fileUploadSelfie"
+          onChange={(e) => setSelfie(e.target.files[0])}
         />
 
-        {/* Show selected file name */}
-        {idFile && (
-          <p className="text-sm text-green-600 mt-2">Selected: {idFile.name}</p>
-        )}
+      {/* File Previews */}
+      {idFile && <p className="text-sm text-green-600 mt-2">ID Selected: {idFile.name}</p>}
+      {selfie && <p className="text-sm text-green-600 mt-2">Selfie Selected: {selfie.name}</p>}
       </div>
 
       <div className="bg-emerald-50 p-4 border border-gray-200 rounded-lg text-sm text-gray-600 mb-6">
@@ -737,9 +849,38 @@ const verifyOTP = () => {
 
 {step === 6 && (
   <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      setStep(7); 
+    onSubmit={async (e) => {
+  e.preventDefault();
+
+  console.log("📝 Debug — Security form state:", {
+        securityQuestion,
+        securityAnswer
+      });
+
+ if (!securityQuestion || !securityAnswer) {
+    alert("Please fill in security question and answer");
+    return;
+  }
+
+  try {
+       console.log("📤 Sending payload to backend:", {
+          securityQuestion,
+          securityAnswer
+        });
+        // Actually call the API
+        const res = await setSecurity({ securityQuestion, securityAnswer });
+
+        console.log("📥 Backend response:", res.data);
+   if (res.data.msg?.toLowerCase().includes("success")) {
+          setStep(8);
+        } else {
+          console.warn("⚠️ Backend returned an error message:", res.data);
+          alert(res.data.msg || "Step 6 failed");
+        }
+      } catch (err) {
+        console.error("❌ Security step error:", err.response?.data || err.message);
+        alert(err.response?.data?.msg || "Server error during security setup");
+      }
     }}
     className="w-125 max-w-2xl"
   >
@@ -829,9 +970,13 @@ const verifyOTP = () => {
 {step === 7 && (
   <form
     onSubmit={(e) => {
-      e.preventDefault();
-      setStep(8);
-    }}
+  e.preventDefault();
+  if (consent1 && consent2 && consent3 && consent4) {
+    setStep(8);
+  } else {
+    alert("Please accept all terms");
+  }
+}}
     className="w-125 max-w-2xl"
   >
     <div className="border border-gray-300  rounded-2xl rounded p-6 shadow-sm bg-white relative text-center">
@@ -919,10 +1064,20 @@ const verifyOTP = () => {
 
 {step === 8 && (
   <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      setStep(10); 
-    }}
+    onSubmit={async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post(`${API_BASE}/submit`);
+    if (res.data.success) {
+      setStep(10);
+    } else {
+      alert("Submission failed");
+    }
+  } catch (err) {
+    alert("Server error during final submission");
+  }
+}}
+
     className="w-125 max-w-2xl"
   >
     <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">

@@ -7,27 +7,35 @@ require("dotenv").config();
 const onboardingRoutes = require("./routes/onboardingRoutes");
 const app = express();
 
-// Session setup
+// Middleware
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend port (Vite default)
+    credentials: true,
+  })
+);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secretKey",
+    secret: "yourSecret",
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, secure: false, maxAge: 60 * 60 * 1000 },
+    cookie: { secure: false, httpOnly: true, maxAge: 3600000 },
   })
 );
 
-app.use(express.json());
-
-// API routes
+// ✅ Register API routes BEFORE React build serving
 app.use("/api/onboarding", onboardingRoutes);
 
-// Serve React build folder
+// ✅ Serve frontend build (after all APIs)
 app.use(express.static(path.join(__dirname, "../customer/dist")));
-
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../customer/dist/index.html"));
 });
 
+// Start the server
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`App running on http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(`✅ App running at http://localhost:${port}`);
+});

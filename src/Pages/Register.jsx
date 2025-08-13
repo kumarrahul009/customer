@@ -359,7 +359,7 @@ const verifyOTP = () => {
       )}
 
 
-{step === 3 && (
+{step === 3 && ( 
   <form
     onSubmit={(e) => {
       e.preventDefault();
@@ -379,7 +379,6 @@ const verifyOTP = () => {
       />
     </div>
 
-    {/* Email input */}
     <div className="mb-4">
       <label className="block text-gray-700 mb-1">Email Address</label>
       <div className="relative">
@@ -401,7 +400,6 @@ const verifyOTP = () => {
       )}
     </div>
 
-    {/* Mobile Number input */}
     <div className="mb-4">
       <label className="block text-gray-700 mb-1">Mobile Number</label>
       <div className="flex gap-2">
@@ -422,7 +420,7 @@ const verifyOTP = () => {
       <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
     </div>
 
-    {/* OTP Verification */}
+    
     <div className="mb-4 p-4 border border-blue-300 rounded bg-blue-50">
       <p className="text-sm font-semibold mb-2 text-blue-800">OTP Verification</p>
 
@@ -631,7 +629,7 @@ const verifyOTP = () => {
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          {/* Upload Government ID */}
+        
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Upload Government ID</label>
             <div className="border border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50">
@@ -646,7 +644,7 @@ const verifyOTP = () => {
             </div>
           </div>
 
-          {/* Live Photo */}
+         
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Live Photo</label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400">
@@ -671,8 +669,8 @@ const verifyOTP = () => {
           </div>
         </div>
 
-        {/* Hidden Inputs */}
-        {/* Rear camera for ID */}
+       
+        
         <input
           type="file"
           accept="image/*"
@@ -682,7 +680,7 @@ const verifyOTP = () => {
           onChange={(e) => setIdFile(e.target.files[0])}
         />
 
-        {/* Front camera for selfie */}
+       
         <input
           type="file"
           accept="image/*"
@@ -692,7 +690,7 @@ const verifyOTP = () => {
           onChange={(e) => setIdFile(e.target.files[0])}
         />
 
-        {/* Browse file input */}
+        
         <input
           type="file"
           accept="image/*,.pdf"
@@ -701,7 +699,7 @@ const verifyOTP = () => {
           onChange={(e) => setIdFile(e.target.files[0])}
         />
 
-        {/* Show selected file name */}
+       
         {idFile && (
           <p className="text-sm text-green-600 mt-2">Selected: {idFile.name}</p>
         )}
@@ -729,10 +727,6 @@ const verifyOTP = () => {
     </div>
   </form>
 )}
-
-
-
-
 
 
 {step === 6 && (
@@ -1035,25 +1029,20 @@ const verifyOTP = () => {
   </form>
 )}
 
-
-
-
-
 {step === 10 && (
-  
   <div className="w-150 max-w-2xl mx-auto">
-    <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
+    <div className="border border-gray-300 rounded-2xl p-6 shadow-sm bg-white relative">
       <div className="absolute top-4 right-4 text-sm text-gray-500">Step 10 / 10</div>
 
-     
+      {/* Success Message */}
       <div className="text-center">
         <h2 className="text-2xl font-extrabold text-green-700 mb-2">
           Account Created Successfully
         </h2>
-        <div className="text-5xl text-green-600 mb-4">✔️</div> 
+        <div className="text-5xl text-green-600 mb-4">✔️</div>
       </div>
 
-    
+      {/* Progress Bar */}
       <div className="h-2 bg-gray-200 rounded-full mb-6">
         <div
           className="h-full bg-green-600 rounded-full transition-all duration-300"
@@ -1061,30 +1050,33 @@ const verifyOTP = () => {
         />
       </div>
 
-     
+      {/* Info */}
       <p className="text-center text-gray-700 mb-4">
-         Your account has been successfully created and your submitted files have been confirmed.
+        Your account has been successfully created and your submitted files have been confirmed.
       </p>
 
+      {/* What's Next Section */}
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-  <h3 className="text-lg font-semibold text-center text-gray-800 mb-3">What's Next?</h3>
-  <ul className="space-y-2 text-sm text-gray-700">
-    <li className="flex items-start">
-      <span className="text-blue-600 mr-2 mt-0.5">✔️</span>
-      <span>We'll review your application within 1-2 business days.</span>
-    </li>
-    <li className="flex items-start">
-      <span className="text-blue-600 mr-2 mt-0.5">✔️</span>
-      <span>You'll receive an email confirmation once your account is activated.</span>
-    </li>
-    <li className="flex items-start">
-      <span className="text-blue-600 mr-2 mt-0.5">✔️</span>
-      <span>Your debit card will be mailed to your address within 5–7 business days.</span>
-    </li>
-  </ul>
-</div>
+        <h3 className="text-lg font-semibold text-center text-gray-800 mb-3">
+          What's Next?
+        </h3>
+        <ul className="space-y-2 text-sm text-gray-700">
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2 mt-0.5">✔️</span>
+            <span>We'll review your application within 1-2 business days.</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2 mt-0.5">✔️</span>
+            <span>You'll receive an email confirmation once your account is activated.</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2 mt-0.5">✔️</span>
+            <span>Your debit card will be mailed to your address within 5–7 business days.</span>
+          </li>
+        </ul>
+      </div>
 
-     
+      {/* Action Buttons */}
       <div className="flex justify-center gap-4 my-6">
         <button
           onClick={() => navigate("/dashboard")}
@@ -1092,11 +1084,19 @@ const verifyOTP = () => {
         >
           Go to Dashboard
         </button>
+
+        <button
+  onClick={() => navigate("/timevalidation")}
+  className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition"
+>
+  Login
+</button>
+
         <button
           onClick={() => {
             localStorage.clear();
             sessionStorage.clear();
-            setStep(0); 
+            setStep(0);
             navigate("/login");
           }}
           className="bg-gray-400 text-white py-2 px-4 rounded hover:bg-gray-500 transition"
@@ -1105,19 +1105,20 @@ const verifyOTP = () => {
         </button>
       </div>
 
-     
+      {/* Help Section */}
       <div className="mt-8 text-center border-t pt-4">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">Need Help?</h3>
-                <p className="text-xs text-gray-400">Our support team is available 24/7 to assist you.</p>
-
+        <p className="text-xs text-gray-400">
+          Our support team is available 24/7 to assist you.
+        </p>
         <p className="text-sm text-gray-600 mb-1">
           💬 Live Chat · ✉️ support@example.com · 📞 +91 98765 43210
         </p>
-        
       </div>
     </div>
   </div>
 )}
+
 
       
     </div>

@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+<<<<<<< HEAD
 const session = require("express-session");
 const path = require("path");
 require("dotenv").config();
@@ -39,3 +40,17 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`✅ App running at http://localhost:${port}`);
 });
+=======
+require("dotenv").config();
+
+const app = express();
+app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(express.json());
+
+const onboardingRoutes = require("./routes/onboardingRoutes");
+app.use("/api/onboarding", onboardingRoutes);
+
+app.listen(process.env.PORT, () =>
+  console.log("Server running on port", process.env.PORT)
+);
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad

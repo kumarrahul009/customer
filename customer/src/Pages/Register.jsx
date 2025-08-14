@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+<<<<<<< HEAD
 import axios from "axios";
 
 const API_BASE = "http://localhost:5000/api/onboarding"; // change to your backend URL
+=======
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
 import { useRef } from "react";
 
 import { useNavigate } from "react-router-dom";
@@ -13,12 +16,15 @@ import photoUploadIcon from "../assets/imges/camera.svg";
 import cameraIcon from "../assets/imges/upload.svg";
 import editIcon from "../assets/imges/Edit.png";
 import tick from "../assets/imges/tick.jpg";
+<<<<<<< HEAD
 import { submitStep1 } from "../api/onboarding";
 import { sendOTP } from "../api/onboarding";
 import { saveAddress } from "../api/onboarding";
 import { uploadDocuments } from "../api/onboarding";
 import { setSecurity } from "../api/onboarding";
 
+=======
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
 
 const Register = () => {
   const navigate = useNavigate();
@@ -152,6 +158,7 @@ const verifyOTP = () => {
 
   {step === 1 && (
   <form
+<<<<<<< HEAD
    onSubmit={async (e) => {
   e.preventDefault();
    
@@ -175,6 +182,12 @@ const verifyOTP = () => {
     alert(err.response?.data?.msg || "Step 1 failed");
   }
 }}
+=======
+    onSubmit={(e) => {
+      e.preventDefault();
+      setStep(2);
+    }}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-emerald-100"
   >
     <div className="flex justify-between items-center mb-4">
@@ -296,6 +309,7 @@ const verifyOTP = () => {
 
 {step === 2 && (
         <form
+<<<<<<< HEAD
           onSubmit={async (e) => {
   e.preventDefault();
   try {
@@ -314,6 +328,12 @@ const verifyOTP = () => {
     alert(err.response?.data?.msg || "Server error during personal info step");
   }
 }}
+=======
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep(3);
+          }}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
           <div className="flex justify-between items-center mb-4">
@@ -351,7 +371,11 @@ const verifyOTP = () => {
     className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
     placeholder="Enter your full name"
     value={fullName}
+<<<<<<< HEAD
     onChange={(e) => setFullName(e.target.value)} required
+=======
+    onChange={(e) => setFullName(e.target.value)}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
   />
   <p className="text-xs text-gray-500 mt-1">As it appears on your ID document</p>
 </div>
@@ -455,6 +479,7 @@ const verifyOTP = () => {
           className="w-full px-4 py-2 border border-gray-300 rounded"
         />
         <button
+<<<<<<< HEAD
          type="button"
  onClick={async () => {
   if (mobile.length !== 10) {
@@ -478,6 +503,9 @@ const verifyOTP = () => {
     alert(err.response?.data?.msg || "Failed to send OTP");
   }
 }}
+=======
+          type="button"
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
           className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
         >
           Send OTP
@@ -504,6 +532,7 @@ const verifyOTP = () => {
         ))}
         <button
           type="button"
+<<<<<<< HEAD
         onClick={async () => {
           try {
             const res = await axios.post(`${API_BASE}/send-otp`, { mobile });
@@ -514,6 +543,8 @@ const verifyOTP = () => {
             alert("Failed to resend OTP");
           }
         }}
+=======
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
           className="text-sm text-blue-600 hover:underline ml-auto"
         >
           Resend OTP
@@ -554,6 +585,7 @@ const verifyOTP = () => {
 
 {step === 4 && (
   <form
+<<<<<<< HEAD
    onSubmit={async (e) => {
   e.preventDefault();
   try {
@@ -573,6 +605,12 @@ const verifyOTP = () => {
   }
 }}
 
+=======
+    onSubmit={(e) => {
+      e.preventDefault();
+      setStep(5);
+    }}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
   >
     <div className="flex justify-between items-center mb-4">
@@ -694,6 +732,7 @@ const verifyOTP = () => {
 
 {step === 5 && (
   <form
+<<<<<<< HEAD
     onSubmit={async (e) => {
   e.preventDefault();
 
@@ -716,6 +755,12 @@ const verifyOTP = () => {
   }
 }}
 
+=======
+    onSubmit={(e) => {
+      e.preventDefault();
+      setStep(6);
+    }}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     className="w-125 max-w-2xl"
   >
     <div className="border border-gray-300 rounded-2xl p-6 shadow-md bg-white">
@@ -768,7 +813,11 @@ const verifyOTP = () => {
                 </button>
                 <button
                   type="button"
+<<<<<<< HEAD
                   onClick={() => document.getElementById("fileUploadSelfie").click()}
+=======
+                  onClick={() => document.getElementById("fileUpload").click()}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
                   className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
                 >
                   Browse Files
@@ -796,7 +845,11 @@ const verifyOTP = () => {
           capture="user"
           className="hidden"
           id="cameraUploadSelfie"
+<<<<<<< HEAD
           onChange={(e) => setSelfie(e.target.files[0])}
+=======
+          onChange={(e) => setIdFile(e.target.files[0])}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
         />
 
         {/* Browse file input */}
@@ -804,6 +857,7 @@ const verifyOTP = () => {
           type="file"
           accept="image/*,.pdf"
           className="hidden"
+<<<<<<< HEAD
           id="fileUploadSelfie"
           onChange={(e) => setSelfie(e.target.files[0])}
         />
@@ -811,6 +865,16 @@ const verifyOTP = () => {
       {/* File Previews */}
       {idFile && <p className="text-sm text-green-600 mt-2">ID Selected: {idFile.name}</p>}
       {selfie && <p className="text-sm text-green-600 mt-2">Selfie Selected: {selfie.name}</p>}
+=======
+          id="fileUpload"
+          onChange={(e) => setIdFile(e.target.files[0])}
+        />
+
+        {/* Show selected file name */}
+        {idFile && (
+          <p className="text-sm text-green-600 mt-2">Selected: {idFile.name}</p>
+        )}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
       </div>
 
       <div className="bg-emerald-50 p-4 border border-gray-200 rounded-lg text-sm text-gray-600 mb-6">
@@ -843,6 +907,7 @@ const verifyOTP = () => {
 
 {step === 6 && (
   <form
+<<<<<<< HEAD
     onSubmit={async (e) => {
   e.preventDefault();
 
@@ -875,6 +940,11 @@ const verifyOTP = () => {
         console.error("❌ Security step error:", err.response?.data || err.message);
         alert(err.response?.data?.msg || "Server error during security setup");
       }
+=======
+    onSubmit={(e) => {
+      e.preventDefault();
+      setStep(7); 
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     }}
     className="w-125 max-w-2xl"
   >
@@ -961,6 +1031,7 @@ const verifyOTP = () => {
   </form>
 )}
 
+<<<<<<< HEAD
 {/* {step === 6 && (
   <form
     onSubmit={async (e) => {
@@ -1027,6 +1098,14 @@ const verifyOTP = () => {
     alert("Please accept all terms");
   }
 }}
+=======
+{step === 7 && (
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      setStep(8);
+    }}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     className="w-125 max-w-2xl"
   >
     <div className="border border-gray-300  rounded-2xl rounded p-6 shadow-sm bg-white relative text-center">
@@ -1114,6 +1193,7 @@ const verifyOTP = () => {
 
 {step === 8 && (
   <form
+<<<<<<< HEAD
     onSubmit={async (e) => {
   e.preventDefault();
   if (!fullName) {
@@ -1155,6 +1235,12 @@ const verifyOTP = () => {
       }
     }}
 
+=======
+    onSubmit={(e) => {
+      e.preventDefault();
+      setStep(10); 
+    }}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     className="w-125 max-w-2xl"
   >
     <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
@@ -1196,7 +1282,11 @@ const verifyOTP = () => {
             <tr className="border-b">
               <td className="py-2 font-medium">Create your Account</td>
               <td className="py-2 space-y-2">
+<<<<<<< HEAD
                 
+=======
+                <div>{email}</div>
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
                 <textarea
                   rows="2"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -1213,11 +1303,19 @@ const verifyOTP = () => {
             <tr className="border-b">
               <td className="py-2 font-medium">Contact information</td>
               <td className="py-2 space-y-2">
+<<<<<<< HEAD
                 
                 <textarea
                   rows="2"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   defaultValue={`Phone: ${mobile}`}
+=======
+                <div>{phone}</div>
+                <textarea
+                  rows="2"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  defaultValue={`Phone: ${phone}`}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
                 />
               </td>
               <td className="py-2 text-right">
@@ -1230,12 +1328,20 @@ const verifyOTP = () => {
             <tr>
               <td className="py-2 font-medium">Address Details</td>
               <td className="py-2 space-y-2">
+<<<<<<< HEAD
                
                 <textarea
                   rows="3"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   defaultValue={`Address: ${address1}
                   ${address2 ? address2 + "\n" : ""}${city}, ${state}, ${postal}, ${country}`}
+=======
+                <div>{address}</div>
+                <textarea
+                  rows="3"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                  defaultValue={`Address: ${address}`}
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
                 />
               </td>
               <td className="py-2 text-right">

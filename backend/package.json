@@ -14,14 +14,22 @@
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+<<<<<<< HEAD
     "express": "^4.21.2",
     "express-session": "^1.18.2",
+=======
+    "express": "^5.1.0",
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "mysql2": "^3.14.3",
     "nodemailer": "^7.0.5",
+<<<<<<< HEAD
     "nodemon": "^3.1.10",
     "serve-static": "^2.2.0",
     "twilio": "^5.8.0"
+=======
+    "nodemon": "^3.1.10"
+>>>>>>> 22d4bf18720eb98cd0bf8110265cf65cc72ddfad
   }
 }

@@ -171,6 +171,20 @@ exports.setSecurity = (req, res) => {
   return res.json({ msg: "Security step saved successfully" });
 };
 
+// exports.setSecurity = (req, res) => {
+//   const { puzzleVerified } = req.body;
+
+//   if (!puzzleVerified) {
+//     return res.status(400).json({ msg: "Puzzle verification failed" });
+//   }
+
+//   // Save puzzle verification in session
+//   req.session.is2FA = true;
+
+//   return res.json({ msg: "Puzzle verification success" });
+// };
+
+
 // exports.setSecurity = async (req, res) => {
 //   const { securityQuestion, securityAnswer } = req.body;
 //   const email = req.session.email; // Assuming Step 1 stored email in session
@@ -217,16 +231,42 @@ exports.setSecurity = (req, res) => {
 // ---------- STEP 8 – Final Submit ----------
 exports.finalSubmit = async (req, res) => {
   try {
-    const id = await saveCustomer(req.session);
+    console.log("📥 Session data:", req.session);
+    console.log("📥 Body data:", req.body);
 
-    console.log(
-      `📨 Welcome SMS: "Welcome! Your account #${id} is active." sent to ${req.session.mobile}`
-    );
+    const data = {
+      email: req.body.email || req.session.email,
+      password: req.body.password || req.session.password,
+      full_name: req.body.full_name || req.session.full_name,
+      dob: req.body.dob || req.session.dob,
+      gender: req.body.gender || req.session.gender,
+      mobile: req.body.mobile || req.session.mobile,
+      city: req.body.city || req.session.city,
+      state: req.body.state || req.session.state,
+      postal: req.body.postal || req.session.postal,
+      country: req.body.country || req.session.country,
+      address1: req.body.address1 || req.session.address1,
+      address2: req.body.address2 || req.session.address2,
+      id_file: req.session.id_file,
+      selfie: req.session.selfie,
+      security_question: req.body.security_question || req.session.security_question,
+      security_answer: req.body.security_answer || req.session.security_answer,
+      is_2fa: req.session.is_2fa || 0,
+      is_2fa_verified: req.session.is_2fa_verified || 0,
+      agreed: req.body.agreed || req.session.agreed || 0
+    };
 
-    req.session.destroy(() => {
-      res.json({ msg: "Form submitted successfully", userId: id });
-    });
+    console.log("📤 Saving customer data:", data);
+
+    const customerId = await saveCustomer(data);
+
+    res.json({ success: true, msg: "Final submission complete", customerId });
   } catch (err) {
-    res.status(500).json({ msg: "Error saving data", error: err.message });
+    console.error("❌ Final submit DB error:", err);
+    res.status(500).json({
+      success: false,
+      msg: "Error saving data",
+      error: err.sqlMessage || err.message
+    });
   }
 };

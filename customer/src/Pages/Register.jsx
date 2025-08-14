@@ -154,13 +154,7 @@ const verifyOTP = () => {
   <form
    onSubmit={async (e) => {
   e.preventDefault();
-   console.log("➡️ Step 1 payload:", {
-    email,
-    password,
-    confirmPassword,
-    agreed,
-  });
-
+   
   // ✅ Check before calling backend
   if (!email || !password || !confirmPassword || !agreed) {
     alert("Please fill all fields and agree to terms");
@@ -357,7 +351,7 @@ const verifyOTP = () => {
     className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
     placeholder="Enter your full name"
     value={fullName}
-    onChange={(e) => setFullName(e.target.value)}
+    onChange={(e) => setFullName(e.target.value)} required
   />
   <p className="text-xs text-gray-500 mt-1">As it appears on your ID document</p>
 </div>
@@ -872,7 +866,7 @@ const verifyOTP = () => {
 
         console.log("📥 Backend response:", res.data);
    if (res.data.msg?.toLowerCase().includes("success")) {
-          setStep(8);
+          setStep(7);
         } else {
           console.warn("⚠️ Backend returned an error message:", res.data);
           alert(res.data.msg || "Step 6 failed");
@@ -966,6 +960,62 @@ const verifyOTP = () => {
     </div>
   </form>
 )}
+
+{/* {step === 6 && (
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
+
+      if (!puzzleSolved) {
+        alert("Please complete the puzzle to continue");
+        return;
+      }
+
+      try {
+        const res = await setSecurity({ puzzleVerified: true }); // send a flag
+        console.log("✅ Puzzle 2FA success:", res.data);
+        if (res.data.msg?.toLowerCase().includes("success")) {
+          setStep(8);
+        } else {
+          alert(res.data.msg || "Step 6 failed");
+        }
+      } catch (err) {
+        console.error("❌ Puzzle 2FA error:", err.response?.data || err.message);
+        alert(err.response?.data?.msg || "Server error during puzzle verification");
+      }
+    }}
+    className="w-125 max-w-2xl"
+  >
+    <div className="border border-gray-300 rounded-2xl p-6 shadow-sm bg-white relative">
+      <div className="absolute top-4 right-4 text-sm text-gray-500">Step 6 / 10</div>
+
+      <h2 className="text-2xl font-extrabold text-blue-800 mb-4">Complete the Puzzle</h2>
+      <p className="text-sm text-gray-700 mb-6">
+        Verify you’re human by completing this quick puzzle.
+      </p>
+
+      {/* Puzzle Component *
+      <PuzzleCaptcha onComplete={() => setPuzzleSolved(true)} />
+
+      <div className="flex justify-between mt-6">
+        <button
+          type="button"
+          onClick={() => setStep(5)}
+          className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+        >
+          Back
+        </button>
+        <button
+          type="submit"
+          className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  </form>
+)} */}
+
 
 {step === 7 && (
   <form
@@ -1066,17 +1116,44 @@ const verifyOTP = () => {
   <form
     onSubmit={async (e) => {
   e.preventDefault();
-  try {
-    const res = await axios.post(`${API_BASE}/submit`);
-    if (res.data.success) {
-      setStep(10);
-    } else {
-      alert("Submission failed");
-    }
-  } catch (err) {
-    alert("Server error during final submission");
-  }
-}}
+  if (!fullName) {
+  alert("Full name is missing — go back to Step 2 and fill it in.");
+  return;
+}
+ try {
+        const res = await axios.post(
+          `${API_BASE}/submit`,
+          {
+            email,
+            password,
+            confirm_password: confirmPassword,
+            full_name: fullName, // ✅ map correctly
+            dob,
+            gender,
+            mobile,
+            address1,
+            address2,
+            city,
+            state,
+            postal,
+            country,
+            security_question: securityQuestion, // ✅ match backend
+            security_answer: securityAnswer,     // ✅ match backend
+            agreed: consent1 && consent2 && consent3 && consent4 ? 1 : 0
+          },
+          { withCredentials: true }
+        );
+
+        if (res.data.success) {
+          setStep(10);
+        } else {
+          alert(res.data.msg || "Submission failed");
+        }
+      } catch (err) {
+        console.error("❌ Final submit error:", err.response?.data || err.message);
+        alert(err.response?.data?.msg || "Server error during final submission");
+      }
+    }}
 
     className="w-125 max-w-2xl"
   >
@@ -1119,7 +1196,7 @@ const verifyOTP = () => {
             <tr className="border-b">
               <td className="py-2 font-medium">Create your Account</td>
               <td className="py-2 space-y-2">
-                <div>{email}</div>
+                
                 <textarea
                   rows="2"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -1136,11 +1213,11 @@ const verifyOTP = () => {
             <tr className="border-b">
               <td className="py-2 font-medium">Contact information</td>
               <td className="py-2 space-y-2">
-                <div>{phone}</div>
+                
                 <textarea
                   rows="2"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                  defaultValue={`Phone: ${phone}`}
+                  defaultValue={`Phone: ${mobile}`}
                 />
               </td>
               <td className="py-2 text-right">
@@ -1153,11 +1230,12 @@ const verifyOTP = () => {
             <tr>
               <td className="py-2 font-medium">Address Details</td>
               <td className="py-2 space-y-2">
-                <div>{address}</div>
+               
                 <textarea
                   rows="3"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                  defaultValue={`Address: ${address}`}
+                  defaultValue={`Address: ${address1}
+                  ${address2 ? address2 + "\n" : ""}${city}, ${state}, ${postal}, ${country}`}
                 />
               </td>
               <td className="py-2 text-right">

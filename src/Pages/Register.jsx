@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import uploadIdIcon from "../assets/imges/img.png";
@@ -12,42 +11,31 @@ import tick from "../assets/imges/tick.jpg";
 const Register = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [errors, setErrors] = useState({}); // State for error messages
+  const [touched, setTouched] = useState({}); // State to track if fields were touched
 
   // Central form data state
   const [formData, setFormData] = useState({
-    // Step 1 data
     email: "",
     password: "",
     confirmPassword: "",
     agreed: false,
-
-    // Step 2 data
     fullName: "",
     dob: "",
     gender: "",
-
-    // Step 3 data
     mobile: "",
     otp: "",
     phone: "",
-
-    // Step 4 data
     address1: "",
     address2: "",
     city: "",
     state: "",
     postal: "",
     country: "",
-
-    // Step 5 data
     idFile: null,
     selfie: null,
-
-    // Step 6 data
     securityQuestion: "",
     securityAnswer: "",
-
-    // Step 7 data
     consent1: false,
     consent2: false,
     consent3: false,
@@ -57,12 +45,106 @@ const Register = () => {
   const otpRefs = useRef([]);
   const totalSteps = 10;
 
-  // Update form data helper function
+  // Update form data and clear errors/touched state
   const updateFormData = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Handle input blur to mark field as touched
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Validation functions
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (
+      !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/.test(
+        formData.password
+      )
+    ) {
+      newErrors.password =
+        "Password must be at least 8 characters, include one uppercase letter, one number, and one special character";
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (!formData.agreed) {
+      newErrors.agreed = "You must agree to the Terms & Conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep2 = () => {
+    const newErrors = {};
+    if (!formData.fullName) {
+      newErrors.fullName = "Full name is required";
+    } else if (formData.fullName.length < 2) {
+      newErrors.fullName = "Full name must be at least 2 characters";
+    }
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of birth is required";
+    } else {
+      const today = new Date();
+      const birthDate = new Date(formData.dob);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+      if (age < 18) {
+        newErrors.dob = "You must be at least 18 years old";
+      }
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = "Please select a gender";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Mark all required fields as touched for Step 1
+  const markAllStep1FieldsTouched = () => {
+    setTouched({
+      email: true,
+      password: true,
+      confirmPassword: true,
+      agreed: true,
+    });
+  };
+
+  // Mark all required fields as touched for Step 2
+  const markAllStep2FieldsTouched = () => {
+    setTouched({
+      fullName: true,
+      dob: true,
+      gender: true,
+    });
   };
 
   const handleOTPChange = (e, index) => {
@@ -86,7 +168,7 @@ const Register = () => {
   const verifyOTP = () => {
     const otp = otpRefs.current.map((input) => input.value).join("");
     if (otp.length === 6) {
-      setStep(4); // Go to next step
+      setStep(4);
     } else {
       alert("Please enter all 6 digits");
     }
@@ -98,9 +180,8 @@ const Register = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send formData to your backend
     console.log("Submitting form data:", formData);
-    setStep(10); // Go to success step
+    setStep(10);
   };
 
   return (
@@ -152,7 +233,10 @@ const Register = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setStep(2);
+            markAllStep1FieldsTouched();
+            if (validateStep1()) {
+              setStep(2);
+            }
           }}
           className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-emerald-100"
         >
@@ -169,27 +253,35 @@ const Register = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
             <input
               type="email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className={`w-full px-4 py-2 border ${
+                touched.email && (!formData.email || errors.email) ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               placeholder="Email"
               value={formData.email}
               onChange={(e) => updateFormData("email", e.target.value)}
+              onBlur={() => handleBlur("email")}
+              required
             />
+            {touched.email && errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
             <div className="relative">
               <input
                 type="password"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 pr-10 border ${
+                  touched.password && (!formData.password || errors.password) ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => updateFormData("password", e.target.value)}
+                onBlur={() => handleBlur("password")}
+                required
               />
-              
               <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -217,17 +309,7 @@ const Register = () => {
                 </svg>
               </div>
             </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-            <input
-              type="password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={(e) => updateFormData("confirmPassword", e.target.value)}
-            />
+            {touched.password && errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             <div className="mt-2 text-xs text-gray-600">
               <p className="font-medium mb-1">Password must contain:</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-4">
@@ -239,18 +321,37 @@ const Register = () => {
             </div>
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+            <input
+              type="password"
+              className={`w-full px-4 py-2 border ${
+                touched.confirmPassword && (!formData.confirmPassword || errors.confirmPassword) ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+              onBlur={() => handleBlur("confirmPassword")}
+              required
+            />
+            {touched.confirmPassword && errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+          </div>
+
           <div className="mb-4 flex items-start">
             <input
               id="terms"
               type="checkbox"
               checked={formData.agreed}
               onChange={(e) => updateFormData("agreed", e.target.checked)}
-              className="mt-1 mr-2"
+              onBlur={() => handleBlur("agreed")}
+              className={`mt-1 mr-2 ${touched.agreed && !formData.agreed ? 'border-red-500 outline-red-500' : ''}`}
+              required
             />
             <label htmlFor="terms" className="text-sm text-gray-700">
-              I agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>
+              I agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a> *
             </label>
           </div>
+          {touched.agreed && errors.agreed && <p className="text-red-500 text-xs mt-1">{errors.agreed}</p>}
 
           <div className="flex justify-between mt-6">
             <button
@@ -274,7 +375,10 @@ const Register = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setStep(3);
+            markAllStep2FieldsTouched();
+            if (validateStep2()) {
+              setStep(3);
+            }
           }}
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
@@ -290,41 +394,67 @@ const Register = () => {
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Enter your full name"
-              value={formData.fullName}
-              onChange={(e) => updateFormData("fullName", e.target.value)}
-            />
+          <div className="mb-4 relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+            <div className="relative">
+              <input
+                type="text"
+                className={`w-full px-4 py-2 border ${
+                  touched.fullName
+                    ? !formData.fullName || errors.fullName
+                      ? 'border-red-500'
+                      : 'border-green-500'
+                    : 'border-gray-300'
+                } rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+                placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={(e) => updateFormData("fullName", e.target.value)}
+                onBlur={() => handleBlur("fullName")}
+                required
+              />
+              {touched.fullName && formData.fullName && !errors.fullName && (
+                <span className="absolute right-3 top-2.5 bg-green-100 border border-green-500 rounded-full p-1">
+                  <img src={tick} alt="tick icon" className="w-4 h-4" />
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500 mt-1">As it appears on your ID document</p>
+            {touched.fullName && errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 mb-1">Date of Birth</label>
+            <label className="block text-gray-700 mb-1">Date of Birth *</label>
             <input
               type="date"
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className={`w-full px-4 py-2 border ${
+                touched.dob && (!formData.dob || errors.dob) ? 'border-red-500' : 'border-gray-300'
+              } rounded focus:outline-none focus:ring-2 focus:ring-emerald-400`}
               value={formData.dob}
               onChange={(e) => updateFormData("dob", e.target.value)}
+              onBlur={() => handleBlur("dob")}
+              required
             />
             <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old</p>
+            {touched.dob && errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 mb-1">Gender</label>
+            <label className="block text-gray-700 mb-1">Gender *</label>
             <select
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className={`w-full px-4 py-2 border ${
+                touched.gender && (!formData.gender || errors.gender) ? 'border-red-500' : 'border-gray-300'
+              } rounded focus:outline-none focus:ring-2 focus:ring-emerald-400`}
               value={formData.gender}
               onChange={(e) => updateFormData("gender", e.target.value)}
+              onBlur={() => handleBlur("gender")}
+              required
             >
               <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
+            {touched.gender && errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
           </div>
 
           <div className="flex justify-between mt-6">
@@ -365,7 +495,6 @@ const Register = () => {
             />
           </div>
 
-          {/* Email input */}
           <div className="mb-4">
             <label className="block text-gray-700 mb-1">Email Address</label>
             <div className="relative">
@@ -374,7 +503,7 @@ const Register = () => {
                 value={formData.email}
                 onChange={(e) => updateFormData("email", e.target.value)}
                 placeholder="Enter your Email Address"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded bg-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded bg-white"
               />
               {formData.email.includes("@") && (
                 <span className="absolute right-3 top-2.5 bg-green-100 border border-green-500 rounded-full p-1">
@@ -387,7 +516,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* Mobile Number input */}
           <div className="mb-4">
             <label className="block text-gray-700 mb-1">Mobile Number</label>
             <div className="flex gap-2">
@@ -408,7 +536,6 @@ const Register = () => {
             <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
           </div>
 
-          {/* OTP Verification */}
           <div className="mb-4 p-4 border border-blue-300 rounded bg-blue-50">
             <p className="text-sm font-semibold mb-2 text-blue-800">OTP Verification</p>
 
@@ -443,7 +570,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex justify-between mt-6">
             <button
               type="button"
@@ -498,14 +624,14 @@ const Register = () => {
               <label className="block text-sm text-gray-700 mb-1">
                 Residence address <span className="text-gray-400">(Optional)</span>
               </label>
-              <textarea 
+              <textarea
                 rows={3}
                 value={formData.address2}
                 onChange={(e) => updateFormData("address2", e.target.value)}
                 placeholder="Residence address"
                 className="w-full px-4 py-2 border border-gray-300 rounded"
               />
-            </div> 
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -611,8 +737,6 @@ const Register = () => {
 
             <div className="mb-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                {/* Upload Government ID */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Upload Government ID</label>
                   <div className="border border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50">
@@ -622,12 +746,11 @@ const Register = () => {
                       onClick={() => document.getElementById("cameraUploadID").click()}
                       className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition"
                     >
-                      Browser File
+                      Browse File
                     </button>
                   </div>
                 </div>
 
-                {/* Live Photo */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Live Photo</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400">
@@ -652,8 +775,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Hidden Inputs */}
-              {/* Rear camera for ID */}
               <input
                 type="file"
                 accept="image/*"
@@ -663,7 +784,6 @@ const Register = () => {
                 onChange={(e) => updateFormData("idFile", e.target.files[0])}
               />
 
-              {/* Front camera for selfie */}
               <input
                 type="file"
                 accept="image/*"
@@ -673,7 +793,6 @@ const Register = () => {
                 onChange={(e) => updateFormData("selfie", e.target.files[0])}
               />
 
-              {/* Browse file input */}
               <input
                 type="file"
                 accept="image/*,.pdf"
@@ -689,7 +808,6 @@ const Register = () => {
                 }}
               />
 
-              {/* Show selected file name */}
               {formData.idFile && (
                 <p className="text-sm text-green-600 mt-2">Selected ID: {formData.idFile.name}</p>
               )}
@@ -725,7 +843,7 @@ const Register = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setStep(7); 
+            setStep(7);
           }}
           className="w-125 max-w-2xl"
         >
@@ -783,7 +901,7 @@ const Register = () => {
                 placeholder="Your answer"
                 className="w-full p-2 border rounded text-sm"
               />
-              <p className="text-xs text-gray-500 mt-1">Your answer is case-senstive</p>
+              <p className="text-xs text-gray-500 mt-1">Your answer is case-sensitive</p>
             </div>
 
             <div className="flex justify-between mt-6">
@@ -859,19 +977,54 @@ const Register = () => {
 
             <div className="space-y-3 text-sm text-gray-700 mb-6 text-left">
               <label className="flex items-start space-x-2">
-                <input type="checkbox" checked={formData.consent1} onChange={(e) => updateFormData("consent1", e.target.checked)} className="mt-1" />
-                <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>.</span>
+                <input
+                  type="checkbox"
+                  checked={formData.consent1}
+                  onChange={(e) => updateFormData("consent1", e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  I have read and agree to the{' '}
+                  <a href="#" className="text-emerald-600 underline hover:text-emerald-700">
+                    Terms & Conditions
+                  </a>
+                  .
+                </span>
               </label>
               <label className="flex items-start space-x-2">
-                <input type="checkbox" checked={formData.consent2} onChange={(e) => updateFormData("consent2", e.target.checked)} className="mt-1" />
-                <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Privacy policy</a>.</span>
+                <input
+                  type="checkbox"
+                  checked={formData.consent2}
+                  onChange={(e) => updateFormData("consent2", e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  I have read and agree to the{' '}
+                  <a href="#" className="text-emerald-600 underline hover:text-emerald-700">
+                    Privacy policy
+                  </a>
+                  .
+                </span>
               </label>
               <label className="flex items-start space-x-2">
-                <input type="checkbox" checked={formData.consent3} onChange={(e) => updateFormData("consent3", e.target.checked)} className="mt-1" />
-                <span>I consent to receive electronic communications from ABCD Bank including account statements, notices, and marketing communication.</span>
+                <input
+                  type="checkbox"
+                  checked={formData.consent3}
+                  onChange={(e) => updateFormData("consent3", e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  I consent to receive electronic communications from ABCD Bank including account statements, notices,
+                  and marketing communication.
+                </span>
               </label>
               <label className="flex items-start space-x-2">
-                <input type="checkbox" checked={formData.consent4} onChange={(e) => updateFormData("consent4", e.target.checked)} className="mt-1" />
+                <input
+                  type="checkbox"
+                  checked={formData.consent4}
+                  onChange={(e) => updateFormData("consent4", e.target.checked)}
+                  className="mt-1"
+                />
                 <span>I confirm that the information I provide is accurate and correct.</span>
               </label>
             </div>
@@ -938,7 +1091,6 @@ const Register = () => {
                   <tr className="border-b">
                     <td className="py-2 font-medium">Create your Account</td>
                     <td className="py-2 space-y-2">
-                      {/* <div>{formData.email}</div> */}
                       <textarea
                         rows="2"
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -956,7 +1108,6 @@ const Register = () => {
                   <tr className="border-b">
                     <td className="py-2 font-medium">Contact information</td>
                     <td className="py-2 space-y-2">
-                      {/* <div>{formData.mobile}</div> */}
                       <textarea
                         rows="2"
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -974,9 +1125,6 @@ const Register = () => {
                   <tr>
                     <td className="py-2 font-medium">Address Details</td>
                     <td className="py-2 space-y-2">
-                      {/* <div>
-                        {formData.address1} {formData.address2 && `, ${formData.address2}`}
-                      </div> */}
                       <textarea
                         rows="3"
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -1016,18 +1164,22 @@ const Register = () => {
       {step === 10 && (
         <div className="w-full max-w-2xl mx-4">
           <div className="border border-gray-200 rounded-2xl p-6 shadow-lg bg-white relative overflow-hidden">
-            {/* Decorative elements */}
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-emerald-600"></div>
             <div className="absolute top-4 right-4 text-sm text-gray-500">Step 10 / 10</div>
 
-            {/* Main content */}
             <div className="text-center pt-8 pb-6">
               <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-12 w-12 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              
+
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 Account Created Successfully!
               </h2>
@@ -1036,26 +1188,42 @@ const Register = () => {
               </p>
             </div>
 
-            {/* Progress bar */}
             <div className="h-1.5 bg-gray-100 rounded-full mb-8">
               <div className="h-full bg-green-500 rounded-full" style={{ width: '100%' }}></div>
             </div>
 
-            {/* Account summary */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-8">
               <h3 className="text-xl font-semibold text-center text-gray-800 mb-4 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 text-blue-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Your Account Summary
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-3">
                   <div className="flex items-start">
                     <span className="bg-blue-100 p-1 rounded mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-blue-600"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </span>
                     <div>
@@ -1063,10 +1231,15 @@ const Register = () => {
                       <p className="font-medium">{formData.fullName}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <span className="bg-blue-100 p-1 rounded mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-blue-600"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
                         <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                       </svg>
@@ -1076,10 +1249,15 @@ const Register = () => {
                       <p className="font-medium">{formData.email}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <span className="bg-blue-100 p-1 rounded mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-blue-600"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                       </svg>
                     </span>
@@ -1089,28 +1267,48 @@ const Register = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-start">
                     <span className="bg-blue-100 p-1 rounded mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-blue-600"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </span>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Address</p>
                       <p className="font-medium">
-                        {formData.address1}<br />
-                        {formData.city}, {formData.state}<br />
+                        {formData.address1}
+                        <br />
+                        {formData.city}, {formData.state}
+                        <br />
                         {formData.country} - {formData.postal}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <span className="bg-blue-100 p-1 rounded mr-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-blue-600"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </span>
                     <div>
@@ -1122,50 +1320,88 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Next steps */}
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-center text-gray-800 mb-4 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 text-emerald-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 What's Next?
               </h3>
-              
+
               <div className="space-y-3">
                 <div className="flex items-start bg-green-50 p-4 rounded-lg border border-green-100">
                   <span className="bg-green-100 p-1 rounded mr-3 mt-0.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
                       <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                       <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                     </svg>
                   </span>
                   <div>
                     <h4 className="font-medium text-gray-800 mb-1">Email Verification</h4>
-                    <p className="text-sm text-gray-600">We've sent a verification link to <span className="font-medium">{formData.email}</span>. Please check your inbox and verify your email address.</p>
+                    <p className="text-sm text-gray-600">
+                      We've sent a verification link to <span className="font-medium">{formData.email}</span>. Please
+                      check your inbox and verify your email address.
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start bg-blue-50 p-4 rounded-lg border border-blue-100">
                   <span className="bg-blue-100 p-1 rounded mr-3 mt-0.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-blue-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </span>
                   <div>
                     <h4 className="font-medium text-gray-800 mb-1">Debit Card Delivery</h4>
-                    <p className="text-sm text-gray-600">Your debit card will be mailed to your registered address within 5-7 business days.</p>
+                    <p className="text-sm text-gray-600">
+                      Your debit card will be mailed to your registered address within 5-7 business days.
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start bg-purple-50 p-4 rounded-lg border border-purple-100">
                   <span className="bg-purple-100 p-1 rounded mr-3 mt-0.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-purple-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </span>
                   <div>
                     <h4 className="font-medium text-gray-800 mb-1">Mobile App</h4>
-                    <p className="text-sm text-gray-600">Download our mobile app to access your account anytime, anywhere. Available on iOS and Android.</p>
+                    <p className="text-sm text-gray-600">
+                      Download our mobile app to access your account anytime, anywhere. Available on iOS and Android.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1176,8 +1412,13 @@ const Register = () => {
                 onClick={() => navigate("/dashboard")}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-md flex items-center justify-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M10 2a8 8 0 100 16 8 8 0 000 16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                 </svg>
                 Go to Dashboard
@@ -1189,8 +1430,17 @@ const Register = () => {
                 }}
                 className="flex-1 bg-gray-100 text-gray-800 py-3 px-6 rounded-lg hover:bg-gray-200 transition shadow flex items-center justify-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Logout
               </button>
@@ -1198,28 +1448,52 @@ const Register = () => {
 
             <div className="border-t pt-6 text-center">
               <h4 className="font-medium text-gray-700 mb-3 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.078-2.183l1.562-1.562C15.802 8.249 16 9.1 16 10zm-5.165 3.913l1.58 1.58A5.98 5.98 0 0110 16a5.976 5.976 0 01-2.516-.552l1.562-1.562a4.006 4.006 0 001.789.027zm-4.677-2.796a4.002 4.002 0 01-.041-2.08l-.08.08-1.53-1.533A5.98 5.98 0 004 10c0 .954.223 1.856.619 2.657l1.54-1.54zm1.088-6.45A5.974 5.974 0 0110 4c.954 0 1.856.223 2.657.619l-1.54 1.54a4.002 4.002 0 00-2.346.033L7.246 4.668zM12 10a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 text-blue-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.078-2.183l1.562-1.562C15.802 8.249 16 9.1 16 10zm-5.165 3.913l1.58 1.58A5.98 5.98 0 0110 16a5.976 5.976 0 01-2.516-.552l1.562-1.562a4.006 4.006 0 001.789.027zm-4.677-2.796a4.002 4.002 0 01-.041-2.08l-.08.08-1.53-1.533A5.98 5.98 0 004 10c0 .954.223 1.856.619 2.657l1.54-1.54zm1.088-6.45A5.974 5.974 0 0110 4c.954 0 1.856.223 2.657.619l-1.54 1.54a4.002 4.002 0 00-2.346.033L7.246 4.668zM12 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Need Help?
               </h4>
               <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
                 <a href="#" className="flex items-center text-blue-600 hover:text-blue-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
                     <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
                   </svg>
                   Live Chat
                 </a>
                 <a href="#" className="flex items-center text-blue-600 hover:text-blue-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
                   support@abcdbank.com
                 </a>
                 <a href="#" className="flex items-center text-blue-600 hover:text-blue-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                   </svg>
                   +91 98765 43210

@@ -8,7 +8,7 @@ USE ABCD_DB;
 CREATE TABLE IF NOT EXISTS customers (
   id INT PRIMARY KEY AUTO_INCREMENT,
   email VARCHAR(255) UNIQUE,
-  password TEXT,
+  password  VARCHAR(200),
   full_name VARCHAR(255),
   dob DATE,
   gender VARCHAR(20),

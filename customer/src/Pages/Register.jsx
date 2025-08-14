@@ -24,8 +24,6 @@ const Register = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
-  
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,43 +56,38 @@ const Register = () => {
   const [consent4, setConsent4] = useState(false);
 
   const [phone, setPhone] = useState("");      // for Step 8 review
-   const [address, setAddress] = useState("");  // for Step 8 review
+  const [address, setAddress] = useState("");  // for Step 8 review
 
+  const otpRefs = useRef([]);
 
-  
-const otpRefs = useRef([]);
-
-const handleOTPChange = (e, index) => {
-  const value = e.target.value;
-  if (/^\d$/.test(value)) {
-    if (index < 5) {
-      otpRefs.current[index + 1]?.focus();
+  const handleOTPChange = (e, index) => {
+    const value = e.target.value;
+    if (/^\d$/.test(value)) {
+      if (index < 5) {
+        otpRefs.current[index + 1]?.focus();
+      }
     }
-  }
-};
+  };
 
-const handleOTPKeyDown = (e, index) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-  }
-  if (e.key === "Backspace" && !e.target.value && index > 0) {
-    otpRefs.current[index - 1]?.focus();
-  }
-};
+  const handleOTPKeyDown = (e, index) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+    if (e.key === "Backspace" && !e.target.value && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
 
-const verifyOTP = () => {
-  const otp = otpRefs.current.map((input) => input.value).join("");
-  if (otp.length === 6) {
-    setStep(4); // Go to next step
-  } else {
-    alert("Please enter all 6 digits");
-  }
-};
-     
-
-
+  const verifyOTP = () => {
+    const otp = otpRefs.current.map((input) => input.value).join("");
+    if (otp.length === 6) {
+      setStep(4); // Go to next step
+    } else {
+      alert("Please enter all 6 digits");
+    }
+  };
+  
   const totalSteps = 10;
-
 
   const handleOpenCamera = () => {
     alert("Open camera here or implement live capture logic");
@@ -138,7 +131,7 @@ const verifyOTP = () => {
           </div>
 
           <div className="mt-6 p-4 border border-emerald-300 rounded bg-emerald-50 text-left text-sm text-emerald-800">
-            ✅ You’ll need a valid government ID <br /> ⏱️ About 10 minutes to complete this process
+            ✅ You'll need a valid government ID <br /> ⏱️ About 10 minutes to complete this process
           </div>
 
           <button
@@ -150,170 +143,171 @@ const verifyOTP = () => {
         </div>
       )}
 
-  {step === 1 && (
-  <form
-   onSubmit={async (e) => {
-  e.preventDefault();
-   
-  // ✅ Check before calling backend
-  if (!email || !password || !confirmPassword || !agreed) {
-    alert("Please fill all fields and agree to terms");
-    return;
-  }
-   if (password !== confirmPassword) {
-    alert("❌ Password and Confirm Password do not match");
-    return;
-  }
-  try {
-   const res = await submitStep1({ email, password, confirmPassword, agreed });
-
-    console.log("✅ Step 1 response:", res.data);
-
-    setStep(2); // go to next step
-  } catch (err) {
-    console.error("❌ Step 1 error:", err.response?.data || err.message);
-    alert(err.response?.data?.msg || "Step 1 failed");
-  }
-}}
-    className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-emerald-100"
-  >
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-bold text-blue-800">Create Your Account</h2>
-      <span className="text-sm text-gray-400">Step {step} / {totalSteps}</span>
-    </div>
-
-    <div className="h-2 bg-gray-100 rounded-full mb-6">
-      <div
-        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-        style={{ width: `${(step / 10) * 100}%` }}
-      />
-    </div>
-
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-      <input
-        type="email"
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-    </div>
-
-    <div className="mb-4">
-  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-  <div className="relative">
-    <input
-      type="password"
-      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-    />
-    
-    <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5 text-black"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 15v2m0-10a3 3 0 00-3 3v2a3 3 0 006 0V10a3 3 0 00-3-3z"
-        />
-        <rect
-          x="5"
-          y="10"
-          width="14"
-          height="10"
-          rx="2"
-          ry="2"
-          stroke="black"
-          fill="white"
-        />
-      </svg>
-    </div>
-  </div>
-</div>
-
-
-    <div className="mb-4">
-  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-  <input
-    type="password"
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-    placeholder="Confirm Password"
-    value={confirmPassword}
-    onChange={(e) => setConfirmPassword(e.target.value)}
-  />
-  <div className="mt-2 text-xs text-gray-600">
-    <p className="font-medium mb-1">Password must contain:</p>
-    <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-4">
-      <p>• At least 8 characters</p>
-      <p>• One uppercase letter</p>
-      <p>• One number</p>
-      <p>• One special character</p>
-    </div>
-  </div>
-</div>
-
-
-    <div className="mb-4 flex items-start">
-      <input
-        id="terms"
-        type="checkbox"
-        checked={agreed}
-        onChange={(e) => setAgreed(e.target.checked)}
-        className="mt-1 mr-2"
-      />
-      <label htmlFor="terms" className="text-sm text-gray-700">
-        I agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>
-      </label>
-    </div>
-
-    <div className="flex justify-between mt-6">
-      <button
-        type="button"
-        onClick={() => setStep(step - 1)}
-        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-      >
-        Back
-      </button>
-      <button
-        type="submit"
-        className="bg-emerald-600 text-white py-2 px-6 rounded-lg hover:bg-emerald-700 shadow-md"
-      >
-        Continue
-      </button>
-    </div>
-  </form>
-)}
-
-
-{step === 2 && (
+      {step === 1 && (
         <form
           onSubmit={async (e) => {
-  e.preventDefault();
-  try {
-    const res = await axios.post(`${API_BASE}/step2`, {
-      full_name: fullName,
-      dob,
-      gender,
-    });
-  if (res.data.msg === "Step 2 success") {
-      setStep(3);
-    } else {
-      alert(res.data.msg || "Step 2 failed");
-    }
-  } catch (err) {
-    console.error("❌ Step 2 error:", err.response?.data || err.message);
-    alert(err.response?.data?.msg || "Server error during personal info step");
-  }
-}}
+            e.preventDefault();
+            
+            // ✅ Check before calling backend
+            if (!email || !password || !confirmPassword || !agreed) {
+              alert("Please fill all fields and agree to terms");
+              return;
+            }
+            if (password !== confirmPassword) {
+              alert("❌ Password and Confirm Password do not match");
+              return;
+            }
+            try {
+              const res = await submitStep1({ email, password, confirmPassword, agreed });
+
+              console.log("✅ Step 1 response:", res.data);
+
+              setStep(2); // go to next step
+            } catch (err) {
+              console.error("❌ Step 1 error:", err.response?.data || err.message);
+              alert(err.response?.data?.msg || "Step 1 failed");
+            }
+          }}
+          className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-emerald-100"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-blue-800">Create Your Account</h2>
+            <span className="text-sm text-gray-400">Step {step} / {totalSteps}</span>
+          </div>
+
+          <div className="h-2 bg-gray-100 rounded-full mb-6">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              style={{ width: `${(step / 10) * 100}%` }}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input
+              type="email"
+              name="email"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
+              <input
+                type="password"
+                name="password"
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              
+              <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-black"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 15v2m0-10a3 3 0 00-3 3v2a3 3 0 006 0V10a3 3 0 00-3-3z"
+                  />
+                  <rect
+                    x="5"
+                    y="10"
+                    width="14"
+                    height="10"
+                    rx="2"
+                    ry="2"
+                    stroke="black"
+                    fill="white"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <div className="mt-2 text-xs text-gray-600">
+              <p className="font-medium mb-1">Password must contain:</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-4">
+                <p>• At least 8 characters</p>
+                <p>• One uppercase letter</p>
+                <p>• One number</p>
+                <p>• One special character</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-4 flex items-start">
+            <input
+              id="terms"
+              name="terms"
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 mr-2"
+            />
+            <label htmlFor="terms" className="text-sm text-gray-700">
+              I agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>
+            </label>
+          </div>
+
+          <div className="flex justify-between mt-6">
+            <button
+              type="button"
+              onClick={() => setStep(step - 1)}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              Back
+            </button>
+            <button
+              type="submit"
+              className="bg-emerald-600 text-white py-2 px-6 rounded-lg hover:bg-emerald-700 shadow-md"
+            >
+              Continue
+            </button>
+          </div>
+        </form>
+      )}
+
+      {step === 2 && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            try {
+              const res = await axios.post(`${API_BASE}/step2`, {
+                full_name: fullName,
+                dob,
+                gender,
+              });
+              if (res.data.msg === "Step 2 success") {
+                setStep(3);
+              } else {
+                alert(res.data.msg || "Step 2 failed");
+              }
+            } catch (err) {
+              console.error("❌ Step 2 error:", err.response?.data || err.message);
+              alert(err.response?.data?.msg || "Server error during personal info step");
+            }
+          }}
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
           <div className="flex justify-between items-center mb-4">
@@ -321,56 +315,42 @@ const verifyOTP = () => {
             <span className="text-sm text-gray-500">Step {step} / {totalSteps}</span>
           </div>
 
-          {/* <div className="mb-4">
-            <div className="flex justify-between text-xs text-gray-500 font-medium px-1 mb-1">
-              <span>Account</span>
-              <span>Personal</span>
-              <span>Contact</span>
-              <span>Finish</span>
-            </div>
-            <div className="flex space-x-2 mb-4">
-              {[...Array(totalSteps)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`flex-1 h-1 rounded-full ${i < step ? "bg-emerald-600" : "bg-gray-300"}`}
-                ></div>
-              ))}
-            </div>
-          </div> */}
-           <div className="h-2 bg-gray-200 rounded-full mb-6">
-      <div
-        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-        style={{ width: `${(step / 10) * 100}%` }}
-      />
-    </div>
+          <div className="h-2 bg-gray-200 rounded-full mb-6">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              style={{ width: `${(step / 10) * 100}%` }}
+            />
+          </div>
 
           <div className="mb-4">
-  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-  <input
-    type="text"
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-    placeholder="Enter your full name"
-    value={fullName}
-    onChange={(e) => setFullName(e.target.value)} required
-  />
-  <p className="text-xs text-gray-500 mt-1">As it appears on your ID document</p>
-</div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Enter your full name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)} required
+            />
+            <p className="text-xs text-gray-500 mt-1">As it appears on your ID document</p>
+          </div>
 
           <div className="mb-4">
             <label className="block text-gray-700 mb-1">Date of Birth</label>
             <input
               type="date"
+              name="dob"
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
               value={dob}
-
               onChange={(e) => setDob(e.target.value)}
             />
-            <p className="text-xs text-gray-500 mt-1">You must be at leas 18 years old</p>
+            <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old</p>
           </div>
 
           <div className="mb-4">
             <label className="block text-gray-700 mb-1">Gender</label>
             <select
+              name="gender"
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
               value={gender}
               onChange={(e) => setGender(e.target.value)}
@@ -400,556 +380,551 @@ const verifyOTP = () => {
         </form>
       )}
 
-
-{step === 3 && (
-  <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      setStep(4);
-    }}
-    className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
-  >
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-extrabold text-blue-800">Contact Information</h2>
-      <span className="text-sm text-gray-500">Step 3 / 10</span>
-    </div>
-
-    <div className="h-2 bg-gray-200 rounded-full mb-6">
-      <div
-        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-        style={{ width: `${(step / 10) * 100}%` }}
-      />
-    </div>
-
-    {/* Email input */}
-    <div className="mb-4">
-      <label className="block text-gray-700 mb-1">Email Address</label>
-      <div className="relative">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your Email Address"
-          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded bg-white"
-        />
-        {email.includes("@") && (
-          <span className="absolute right-3 top-2.5 bg-green-100 border border-green-500 rounded-full p-1">
-            <img src={tick} alt="tick icon" className="w-4 h-4" />
-          </span>
-        )}
-      </div>
-      {email.includes("@") && (
-        <p className="text-xs text-green-600 mt-1">Email verified</p>
-      )}
-    </div>
-
-    {/* Mobile Number input */}
-    <div className="mb-4">
-      <label className="block text-gray-700 mb-1">Mobile Number</label>
-      <div className="flex gap-2">
-        <input
-          type="tel"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          placeholder="Mobile Number"
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />
-        <button
-         type="button"
- onClick={async () => {
-  if (mobile.length !== 10) {
-    alert("Enter a valid 10-digit mobile number");
-    return;
-  }
-
-  try {
-    const res = await sendOTP({ mobile }); // from api.js
-
-    console.log("✅ OTP response:", res.data);
-
-    if (res.data.msg === "OTP sent successfully") {
-      setShowOtp(true);
-      alert("OTP sent successfully ✅");
-    } else {
-      alert(res.data.msg || "Failed to send OTP");
-    }
-  } catch (err) {
-    console.error("❌ OTP send error:", err.response?.data || err.message);
-    alert(err.response?.data?.msg || "Failed to send OTP");
-  }
-}}
-          className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
+      {step === 3 && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep(4);
+          }}
+          className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
-          Send OTP
-        </button>
-      </div>
-      <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
-    </div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-extrabold text-blue-800">Contact Information</h2>
+            <span className="text-sm text-gray-500">Step 3 / 10</span>
+          </div>
 
-    {/* OTP Verification */}
-    <div className="mb-4 p-4 border border-blue-300 rounded bg-blue-50">
-      <p className="text-sm font-semibold mb-2 text-blue-800">OTP Verification</p>
+          <div className="h-2 bg-gray-200 rounded-full mb-6">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              style={{ width: `${(step / 10) * 100}%` }}
+            />
+          </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        {[...Array(6)].map((_, index) => (
-          <input
-            key={index}
-            type="text"
-            maxLength={1}
-            ref={(el) => (otpRefs.current[index] = el)}
-            onChange={(e) => handleOTPChange(e, index)}
-            onKeyDown={(e) => handleOTPKeyDown(e, index)}
-            className="w-10 h-10 text-center border border-gray-300 rounded text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        ))}
-        <button
-          type="button"
-        onClick={async () => {
-          try {
-            const res = await axios.post(`${API_BASE}/send-otp`, { mobile });
-            if (res.data.success) {
-              alert("OTP resent ✅");
-            }
-          } catch (err) {
-            alert("Failed to resend OTP");
-          }
-        }}
-          className="text-sm text-blue-600 hover:underline ml-auto"
-        >
-          Resend OTP
-        </button>
-      </div>
+          {/* Email input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-1">Email Address</label>
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your Email Address"
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded bg-white"
+              />
+              {email.includes("@") && (
+                <span className="absolute right-3 top-2.5 bg-green-100 border border-green-500 rounded-full p-1">
+                  <img src={tick} alt="tick icon" className="w-4 h-4" />
+                </span>
+              )}
+            </div>
+            {email.includes("@") && (
+              <p className="text-xs text-green-600 mt-1">Email verified</p>
+            )}
+          </div>
 
-      <div className="mt-3">
-        <button
-          type="button"
-          onClick={verifyOTP}
-          className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm"
-        >
-          Verify OTP
-        </button>
-      </div>
-    </div>
-
-    {/* Navigation Buttons */}
-    <div className="flex justify-between mt-6">
-      <button
-        type="button"
-        onClick={() => setStep(2)}
-        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-      >
-        Back
-      </button>
-      <button
-        type="submit"
-        className="bg-emerald-600 text-white py-2 px-6 rounded hover:bg-emerald-700 shadow"
-      >
-        Continue
-      </button>
-    </div>
-  </form>
-)}
-
-
-
-{step === 4 && (
-  <form
-   onSubmit={async (e) => {
-  e.preventDefault();
-  try {
-    const res = await saveAddress({
-      address1,
-      address2,
-      city,
-      state,
-      postal,
-      country,
-    });
-    console.log("✅ Address step response:", res.data);
-      setStep(5);
-  } catch (err) {
-    console.error("❌ Address step error:", err.response?.data || err.message);
-    alert(err.response?.data?.msg || "Address step failed");
-  }
-}}
-
-    className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
-  >
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-extrabold text-blue-800">Address Details</h2>
-      <span className="text-sm text-gray-500">Step 4 / 10</span>
-    </div>
-
-    <div className="h-2 bg-gray-200 rounded-full mb-6">
-      <div
-        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-        style={{ width: `${(step / 10) * 100}%` }}
-      />
-    </div>
-
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm text-gray-700 mb-1"> Permanent Address </label>
-        <textarea
-           rows={3}
-           value={address1}
-            onChange={(e) => setAddress1(e.target.value)}
-             placeholder="Permanent Address"
-             className="w-full px-4 py-2 border border-gray-300 rounded resize-none"
-             />
-
-           </div>
-
-           
-
-         <div>
-        <label className="block text-sm text-gray-700 mb-1">
-          Residence address <span className="text-gray-400">(Optional)</span>
-        </label>
-        <textarea 
-          rows={3}
-          value={address2}
-          onChange={(e) => setAddress2(e.target.value)}
-          placeholder="Residence address"
-          className="w-full px-4 py-2 border border-gray-300 rounded"
-        />
-      </div> 
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">City</label>
-          <select
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-          >
-            <option value="">Select City</option>
-            <option value="Chennai">Chennai</option>
-            <option value="Bangalore">Bangalore</option>
-            <option value="Mumbai">Mumbai</option>
-            <option value="Delhi">Delhi</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">State/Province</label>
-          <select
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-          >
-            <option value="">Select State</option>
-            <option value="Tamil Nadu">Tamil Nadu</option>
-            <option value="Karnataka">Karnataka</option>
-            <option value="Maharashtra">Maharashtra</option>
-            <option value="Delhi">Delhi</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Postal Code</label>
-          <input
-            type="text"
-            value={postal}
-            placeholder="Postal code"
-            onChange={(e) => setPostal(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Country</label>
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-          >
-            <option value="">Select Country</option>
-            <option value="India">India</option>
-            <option value="USA">United States</option>
-            <option value="UK">United Kingdom</option>
-            <option value="Canada">Canada</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div className="flex justify-between mt-6">
-      <button
-        type="button"
-        onClick={() => setStep(3)}
-        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-      >
-        Back
-      </button>
-      <button
-        type="submit"
-        className="bg-emerald-600 text-white py-2 px-6 rounded hover:bg-emerald-700 shadow"
-      >
-        Continue
-      </button>
-    </div>
-  </form>
-)}
-
-{step === 5 && (
-  <form
-    onSubmit={async (e) => {
-  e.preventDefault();
-
-  if (!idFile || !selfie) {
-    alert("Please upload both ID and selfie");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("id_file", idFile);
-  formData.append("selfie", selfie);
-
-  try {
-    const res = await uploadDocuments(formData);
-    console.log("✅ Upload success:", res.data);
-    setStep(6); // move to next step
-  } catch (err) {
-    console.error("❌ Upload error:", err.response?.data || err.message);
-    alert(err.response?.data?.msg || "File upload failed");
-  }
-}}
-
-    className="w-125 max-w-2xl"
-  >
-    <div className="border border-gray-300 rounded-2xl p-6 shadow-md bg-white">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-extrabold text-blue-800">Identity Verification</h2>
-        <span className="text-sm text-gray-500">Step 5/10</span>
-      </div>
-
-      <div className="h-2 bg-gray-200 rounded-full mb-6">
-        <div
-          className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-          style={{ width: `${(step / 10) * 100}%` }}
-        />
-      </div>
-
-      <p className="text-sm text-gray-700 mb-6">
-        To comply with ABCD Bank regulation and protect your account, we need to verify your identity using a government-issued ID and a selfie.
-      </p>
-
-      <div className="mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-          {/* Upload Government ID */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Upload Government ID</label>
-            <div className="border border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50">
-              <img src={uploadIdIcon} alt="Upload ID Icon" className="mx-auto w-10 h-10 mb-2" />
+          {/* Mobile Number input */}
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-1">Mobile Number</label>
+            <div className="flex gap-2">
+              <input
+                type="tel"
+                name="mobile"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                placeholder="Mobile Number"
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              />
               <button
                 type="button"
-                onClick={() => document.getElementById("cameraUploadID").click()}
-                className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition"
+                onClick={async () => {
+                  if (mobile.length !== 10) {
+                    alert("Enter a valid 10-digit mobile number");
+                    return;
+                  }
+
+                  try {
+                    const res = await sendOTP({ mobile }); // from api.js
+
+                    console.log("✅ OTP response:", res.data);
+
+                    if (res.data.msg === "OTP sent successfully") {
+                      setShowOtp(true);
+                      alert("OTP sent successfully ✅");
+                    } else {
+                      alert(res.data.msg || "Failed to send OTP");
+                    }
+                  } catch (err) {
+                    console.error("❌ OTP send error:", err.response?.data || err.message);
+                    alert(err.response?.data?.msg || "Failed to send OTP");
+                  }
+                }}
+                className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
               >
-                Browser File
+                Send OTP
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
+          </div>
+
+          {/* OTP Verification */}
+          <div className="mb-4 p-4 border border-blue-300 rounded bg-blue-50">
+            <p className="text-sm font-semibold mb-2 text-blue-800">OTP Verification</p>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {[...Array(6)].map((_, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  name={`otp-${index}`}
+                  maxLength={1}
+                  ref={(el) => (otpRefs.current[index] = el)}
+                  onChange={(e) => handleOTPChange(e, index)}
+                  onKeyDown={(e) => handleOTPKeyDown(e, index)}
+                  className="w-10 h-10 text-center border border-gray-300 rounded text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              ))}
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const res = await axios.post(`${API_BASE}/send-otp`, { mobile });
+                    if (res.data.success) {
+                      alert("OTP resent ✅");
+                    }
+                  } catch (err) {
+                    alert("Failed to resend OTP");
+                  }
+                }}
+                className="text-sm text-blue-600 hover:underline ml-auto"
+              >
+                Resend OTP
+              </button>
+            </div>
+
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={verifyOTP}
+                className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm"
+              >
+                Verify OTP
               </button>
             </div>
           </div>
 
-          {/* Live Photo */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Live Photo</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400">
-              <img src={DragDropIcon} alt="Drag & Drop Icon" className="mx-auto w-10 h-10 mb-4" />
-              <div className="flex flex-col gap-3 items-center">
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("cameraUploadSelfie").click()}
-                  className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-6">
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            >
+              Back
+            </button>
+            <button
+              type="submit"
+              className="bg-emerald-600 text-white py-2 px-6 rounded hover:bg-emerald-700 shadow"
+            >
+              Continue
+            </button>
+          </div>
+        </form>
+      )}
+
+      {step === 4 && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            try {
+              const res = await saveAddress({
+                address1,
+                address2,
+                city,
+                state,
+                postal,
+                country,
+              });
+              console.log("✅ Address step response:", res.data);
+              setStep(5);
+            } catch (err) {
+              console.error("❌ Address step error:", err.response?.data || err.message);
+              alert(err.response?.data?.msg || "Address step failed");
+            }
+          }}
+          className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-extrabold text-blue-800">Address Details</h2>
+            <span className="text-sm text-gray-500">Step 4 / 10</span>
+          </div>
+
+          <div className="h-2 bg-gray-200 rounded-full mb-6">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              style={{ width: `${(step / 10) * 100}%` }}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-700 mb-1"> Permanent Address </label>
+              <textarea
+                name="address1"
+                rows={3}
+                value={address1}
+                onChange={(e) => setAddress1(e.target.value)}
+                placeholder="Permanent Address"
+                className="w-full px-4 py-2 border border-gray-300 rounded resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">
+                Residence address <span className="text-gray-400">(Optional)</span>
+              </label>
+              <textarea 
+                name="address2"
+                rows={3}
+                value={address2}
+                onChange={(e) => setAddress2(e.target.value)}
+                placeholder="Residence address"
+                className="w-full px-4 py-2 border border-gray-300 rounded"
+              />
+            </div> 
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">City</label>
+                <select
+                  name="city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded"
                 >
-                  Use Camera
-                </button>
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("fileUploadSelfie").click()}
-                  className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
+                  <option value="">Select City</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Bangalore">Bangalore</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Delhi">Delhi</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">State/Province</label>
+                <select
+                  name="state"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded"
                 >
-                  Browse Files
-                </button>
+                  <option value="">Select State</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Delhi">Delhi</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">Postal Code</label>
+                <input
+                  type="text"
+                  name="postal"
+                  value={postal}
+                  placeholder="Postal code"
+                  onChange={(e) => setPostal(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">Country</label>
+                <select
+                  name="country"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                >
+                  <option value="">Select Country</option>
+                  <option value="India">India</option>
+                  <option value="USA">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                </select>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Hidden Inputs */}
-        {/* Rear camera for ID */}
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          id="cameraUploadID"
-          onChange={(e) => setIdFile(e.target.files[0])}
-        />
+          <div className="flex justify-between mt-6">
+            <button
+              type="button"
+              onClick={() => setStep(3)}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            >
+              Back
+            </button>
+            <button
+              type="submit"
+              className="bg-emerald-600 text-white py-2 px-6 rounded hover:bg-emerald-700 shadow"
+            >
+              Continue
+            </button>
+          </div>
+        </form>
+      )}
 
-        {/* Front camera for selfie */}
-        <input
-          type="file"
-          accept="image/*"
-          capture="user"
-          className="hidden"
-          id="cameraUploadSelfie"
-          onChange={(e) => setSelfie(e.target.files[0])}
-        />
+      {step === 5 && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
 
-        {/* Browse file input */}
-        <input
-          type="file"
-          accept="image/*,.pdf"
-          className="hidden"
-          id="fileUploadSelfie"
-          onChange={(e) => setSelfie(e.target.files[0])}
-        />
+            if (!idFile || !selfie) {
+              alert("Please upload both ID and selfie");
+              return;
+            }
 
-      {/* File Previews */}
-      {idFile && <p className="text-sm text-green-600 mt-2">ID Selected: {idFile.name}</p>}
-      {selfie && <p className="text-sm text-green-600 mt-2">Selfie Selected: {selfie.name}</p>}
-      </div>
+            const formData = new FormData();
+            formData.append("id_file", idFile);
+            formData.append("selfie", selfie);
 
-      <div className="bg-emerald-50 p-4 border border-gray-200 rounded-lg text-sm text-gray-600 mb-6">
-        Your data is encrypted and securely stored. We do not share it with third-party sites without your consent.
-      </div>
-
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={() => setStep(4)}
-          className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+            try {
+              const res = await uploadDocuments(formData);
+              console.log("✅ Upload success:", res.data);
+              setStep(6); // move to next step
+            } catch (err) {
+              console.error("❌ Upload error:", err.response?.data || err.message);
+              alert(err.response?.data?.msg || "File upload failed");
+            }
+          }}
+          className="w-125 max-w-2xl"
         >
-          Back
-        </button>
-        <button
-          type="submit"
-          className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+          <div className="border border-gray-300 rounded-2xl p-6 shadow-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-extrabold text-blue-800">Identity Verification</h2>
+              <span className="text-sm text-gray-500">Step 5/10</span>
+            </div>
+
+            <div className="h-2 bg-gray-200 rounded-full mb-6">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                style={{ width: `${(step / 10) * 100}%` }}
+              />
+            </div>
+
+            <p className="text-sm text-gray-700 mb-6">
+              To comply with ABCD Bank regulation and protect your account, we need to verify your identity using a government-issued ID and a selfie.
+            </p>
+
+            <div className="mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {/* Upload Government ID */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Upload Government ID</label>
+                  <div className="border border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50">
+                    <img src={uploadIdIcon} alt="Upload ID Icon" className="mx-auto w-10 h-10 mb-2" />
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById("cameraUploadID").click()}
+                      className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition"
+                    >
+                      Browser File
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Photo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Live Photo</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400">
+                    <img src={DragDropIcon} alt="Drag & Drop Icon" className="mx-auto w-10 h-10 mb-4" />
+                    <div className="flex flex-col gap-3 items-center">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("cameraUploadSelfie").click()}
+                        className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
+                      >
+                        Use Camera
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("fileUploadSelfie").click()}
+                        className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
+                      >
+                        Browse Files
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hidden Inputs */}
+              {/* Rear camera for ID */}
+              <input
+                type="file"
+                name="idFile"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                id="cameraUploadID"
+                onChange={(e) => setIdFile(e.target.files[0])}
+              />
+
+              {/* Front camera for selfie */}
+              <input
+                type="file"
+                name="selfie"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                id="cameraUploadSelfie"
+                onChange={(e) => setSelfie(e.target.files[0])}
+              />
+
+              {/* Browse file input */}
+              <input
+                type="file"
+                name="selfieFile"
+                accept="image/*,.pdf"
+                className="hidden"
+                id="fileUploadSelfie"
+                onChange={(e) => setSelfie(e.target.files[0])}
+              />
+
+              {/* File Previews */}
+              {idFile && <p className="text-sm text-green-600 mt-2">ID Selected: {idFile.name}</p>}
+              {selfie && <p className="text-sm text-green-600 mt-2">Selfie Selected: {selfie.name}</p>}
+            </div>
+
+            <div className="bg-emerald-50 p-4 border border-gray-200 rounded-lg text-sm text-gray-600 mb-6">
+              Your data is encrypted and securely stored. We do not share it with third-party sites without your consent.
+            </div>
+
+            <div className="flex justify-between">
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {step === 6 && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+
+            console.log("📝 Debug — Security form state:", {
+              securityQuestion,
+              securityAnswer
+            });
+
+            if (!securityQuestion || !securityAnswer) {
+              alert("Please fill in security question and answer");
+              return;
+            }
+
+            try {
+              console.log("📤 Sending payload to backend:", {
+                securityQuestion,
+                securityAnswer
+              });
+              // Actually call the API
+              const res = await setSecurity({ securityQuestion, securityAnswer });
+
+              console.log("📥 Backend response:", res.data);
+              if (res.data.msg?.toLowerCase().includes("success")) {
+                setStep(7);
+              } else {
+                console.warn("⚠️ Backend returned an error message:", res.data);
+                alert(res.data.msg || "Step 6 failed");
+              }
+            } catch (err) {
+              console.error("❌ Security step error:", err.response?.data || err.message);
+              alert(err.response?.data?.msg || "Server error during security setup");
+            }
+          }}
+          className="w-125 max-w-2xl"
         >
-          Continue
-        </button>
-      </div>
-    </div>
-  </form>
-)}
+          <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
+            
+            <div className="absolute top-4 right-4 text-sm text-gray-500">Step 6 / 10</div>
 
+            <div className="mb-6">
+              <h2 className="text-2xl font-extrabold text-blue-800 mb-2">Security</h2>
+              <div className="w-full h-2 bg-gray-200 rounded-full">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  style={{ width: `${(step / 10) * 100}%` }}
+                />
+              </div>
+            </div>
 
+            <p className="text-sm text-gray-700 mb-6">
+              Enhance your account security with these additional measures.
+            </p>
 
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Two-Factor Authentication (2FA)</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Receive a code on your mobile device each time you login.
+              </p>
 
+              <div className="bg-emerald-50 border border-gray-200 rounded p-4 text-sm text-gray-600 mb-6">
+                <strong className="block font-medium text-gray-800 mb-1">Why We Use 2FA</strong>
+                Two-factor authentication adds an extra layer of security to your account. Even if someone knows your password, they won't be able to access your account without the verification code sent to your mobile device.
+              </div>
+            </div>
 
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Security Questions</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Set up a security question to help verify your identity if you need to recover your account.
+              </p>
 
-{step === 6 && (
-  <form
-    onSubmit={async (e) => {
-  e.preventDefault();
+              <select
+                name="securityQuestion"
+                value={securityQuestion}
+                onChange={(e) => setSecurityQuestion(e.target.value)}
+                className="w-full p-2 border rounded mb-4 text-sm"
+              >
+                <option value="">Select a security question</option>
+                <option value="pet">What is the name of your first pet?</option>
+                <option value="school">What was your primary school's name?</option>
+                <option value="city">In what city were you born?</option>
+                <option value="nickname">What was your childhood nickname?</option>
+              </select>
 
-  console.log("📝 Debug — Security form state:", {
-        securityQuestion,
-        securityAnswer
-      });
+              <input
+                type="text"
+                name="securityAnswer"
+                value={securityAnswer}
+                onChange={(e) => setSecurityAnswer(e.target.value)}
+                placeholder="Your answer"
+                className="w-full p-2 border rounded text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">Your answer is case-sensitive</p>
+            </div>
 
- if (!securityQuestion || !securityAnswer) {
-    alert("Please fill in security question and answer");
-    return;
-  }
-
-  try {
-       console.log("📤 Sending payload to backend:", {
-          securityQuestion,
-          securityAnswer
-        });
-        // Actually call the API
-        const res = await setSecurity({ securityQuestion, securityAnswer });
-
-        console.log("📥 Backend response:", res.data);
-   if (res.data.msg?.toLowerCase().includes("success")) {
-          setStep(7);
-        } else {
-          console.warn("⚠️ Backend returned an error message:", res.data);
-          alert(res.data.msg || "Step 6 failed");
-        }
-      } catch (err) {
-        console.error("❌ Security step error:", err.response?.data || err.message);
-        alert(err.response?.data?.msg || "Server error during security setup");
-      }
-    }}
-    className="w-125 max-w-2xl"
-  >
-    <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
-      
-      
-      <div className="absolute top-4 right-4 text-sm text-gray-500">Step 6 / 10</div>
-
-     
-      <div className="mb-6">
-        <h2 className="text-2xl font-extrabold text-blue-800 mb-2">Security</h2>
-        <div className="w-full h-2 bg-gray-200 rounded-full">
-          <div
-            className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-            style={{ width: `${(step / 10) * 100}%` }}
-          />
-        </div>
-      </div>
-
-     
-      <p className="text-sm text-gray-700 mb-6">
-        Enhance your account security with these additional measures.
-      </p>
-
-      
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-800 mb-2">Two-Factor Authentication (2FA)</h3>
-        <p className="text-sm text-gray-600 mb-3">
-          Receive a code on your mobile device each time you login.
-        </p>
-
-        <div className="  bg-emerald-50 border  border-gray-200 rounded p-4 text-sm text-gray-600 mb-6">
-          <strong className="block font-medium text-gray-800 mb-1">Why We Use 2FA</strong>
-          Two-factor authentication adds an extra layer of security to your account. Even if someone knows your password, they won’t be able to access your account without the verification code sent to your mobile device.
-        </div>
-      </div>
-
-     
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-800 mb-2">Security Questions</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Set up a security question to help verify your identity if you need to recover your account.
-        </p>
-
-        <select
-          value={securityQuestion}
-          onChange={(e) => setSecurityQuestion(e.target.value)}
-          className="w-full p-2 border rounded mb-4 text-sm"
-        >
-          <option value="">Select a security question</option>
-          <option value="pet">What is the name of your first pet?</option>
-          <option value="school">What was your primary school's name?</option>
-          <option value="city">In what city were you born?</option>
-          <option value="nickname">What was your childhood nickname?</option>
-        </select>
-
-        <input
-          type="text"
-          value={securityAnswer}
-          onChange={(e) => setSecurityAnswer(e.target.value)}
-          placeholder="Your answer"
-          className="w-full p-2 border rounded text-sm"
-        />
-        <p className="text-xs text-gray-500 mt-1">Your answer is case-senstive</p>
-      </div>
-
-      
-      <div className="flex justify-between mt-6">
-        <button
-          type="button"
-          onClick={() => setStep(5)}
-          className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
-        >
-          Back
-        </button>
+            <div className="flex justify-between mt-6">
+              <button
+                type="button"
+                onClick={() => setStep(5)}
+                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+              >
+                Back
+              </button>
         <button
           type="submit"
           className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
@@ -1075,39 +1050,65 @@ const verifyOTP = () => {
 
      
       <div className="space-y-3 text-sm text-gray-700 mb-6 text-left">
-        <label className="flex items-start space-x-2">
-          <input type="checkbox" checked={consent1} onChange={(e) => setConsent1(e.target.checked)} className="mt-1" />
-          <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>.</span>
-        </label>
-        <label className="flex items-start space-x-2">
-          <input type="checkbox" checked={consent2} onChange={(e) => setConsent2(e.target.checked)} className="mt-1" />
-          <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Privacy policy</a>.</span>
-        </label>
-        <label className="flex items-start space-x-2">
-          <input type="checkbox" checked={consent3} onChange={(e) => setConsent3(e.target.checked)} className="mt-1" />
-          <span>I consent to receive electronic communications from ABCD Bank including account statements, notices, and marketing communication.</span>
-        </label>
-        <label className="flex items-start space-x-2">
-          <input type="checkbox" checked={consent4} onChange={(e) => setConsent4(e.target.checked)} className="mt-1" />
-          <span>I confirm that the information I provide is accurate and correct.</span>
-        </label>
-      </div>
+  <label className="flex items-start space-x-2">
+    <input 
+      type="checkbox" 
+      name="termsConsent"
+      checked={consent1} 
+      onChange={(e) => setConsent1(e.target.checked)} 
+      className="mt-1" 
+    />
+    <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>.</span>
+  </label>
+  <label className="flex items-start space-x-2">
+    <input 
+      type="checkbox" 
+      name="privacyConsent"
+      checked={consent2} 
+      onChange={(e) => setConsent2(e.target.checked)} 
+      className="mt-1" 
+    />
+    <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Privacy policy</a>.</span>
+  </label>
+  <label className="flex items-start space-x-2">
+    <input 
+      type="checkbox" 
+      name="communicationsConsent"
+      checked={consent3} 
+      onChange={(e) => setConsent3(e.target.checked)} 
+      className="mt-1" 
+    />
+    <span>I consent to receive electronic communications from ABCD Bank including account statements, notices, and marketing communication.</span>
+  </label>
+  <label className="flex items-start space-x-2">
+    <input 
+      type="checkbox" 
+      name="accuracyConsent"
+      checked={consent4} 
+      onChange={(e) => setConsent4(e.target.checked)} 
+      className="mt-1" 
+    />
+    <span>I confirm that the information I provide is accurate and correct.</span>
+  </label>
+</div>
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={() => setStep(6)}
-          className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
-        >
-          Back
-        </button>
-        <button
-          type="submit"
-          className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
-        >
-          Continue
-        </button>
-      </div>
+<div className="flex justify-between">
+  <button
+    type="button"
+    name="backButton"
+    onClick={() => setStep(6)}
+    className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+  >
+    Back
+  </button>
+  <button
+    type="submit"
+    name="continueButton"
+    className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+  >
+    Continue
+  </button>
+</div>
     </div>
   </form>
 )}
@@ -1181,6 +1182,7 @@ const verifyOTP = () => {
               <td className="py-2 space-y-2">
                 
                 <textarea
+                name="personalDetailsReview"
                   rows="4"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   defaultValue={`Full Name: ${fullName}\nDOB: ${dob}\nGender: ${gender}`}
@@ -1198,6 +1200,7 @@ const verifyOTP = () => {
               <td className="py-2 space-y-2">
                 
                 <textarea
+                name="accountDetailsReview"
                   rows="2"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   defaultValue={`Email: ${email}`}
@@ -1215,6 +1218,7 @@ const verifyOTP = () => {
               <td className="py-2 space-y-2">
                 
                 <textarea
+                name="contactDetailsReview"
                   rows="2"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   defaultValue={`Phone: ${mobile}`}
@@ -1232,6 +1236,7 @@ const verifyOTP = () => {
               <td className="py-2 space-y-2">
                
                 <textarea
+                  name="addressDetailsReview"
                   rows="3"
                   className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   defaultValue={`Address: ${address1}
@@ -1252,6 +1257,7 @@ const verifyOTP = () => {
       <div className="flex justify-between mt-4">
         <button
           type="button"
+          name="reviewBackButton"
           onClick={() => setStep(7)}
           className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
         >
@@ -1259,6 +1265,7 @@ const verifyOTP = () => {
         </button>
         <button
           type="submit"
+          name="submitApplicationButton"  
           className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
         >
           Submit
@@ -1317,12 +1324,14 @@ const verifyOTP = () => {
      
       <div className="flex justify-center gap-4 my-6">
         <button
+        name="goToDashboardButton"
           onClick={() => navigate("/dashboard")}
           className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
         >
           Go to Dashboard
         </button>
         <button
+        name="logoutButton"
           onClick={() => {
             localStorage.clear();
             sessionStorage.clear();

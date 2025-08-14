@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-const { saveCustomer } = require("../models/customerModel");
+const customerModel = require('../models/customerModel');
 const twilio = require("twilio");
 require('dotenv').config();
 
@@ -229,44 +229,107 @@ exports.setSecurity = (req, res) => {
 // };
 
 // ---------- STEP 8 – Final Submit ----------
+// exports.finalSubmit = async (req, res) => {
+//   try {
+//     console.log("Received final submit data:", req.body);
+//     const result = await customerModel.saveCustomer(req.body);
+//     res.json({ success: true, result });
+//   } catch (err) {
+//     console.error("❌ Final submit server error:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+
+// ✅ Final submit handler
+// exports.finalSubmit = async (req, res) => {
+//   try {
+//     const sessionData = req.session.onboarding || {};
+
+//     // Merge request body just in case
+//     const finalData = {
+//       ...sessionData,
+//       ...req.body,
+//     };
+
+//     // Ensure required fields exist
+//     if (!finalData.email || !finalData.password) {
+//       return res.status(400).json({
+//         success: false,
+//         msg: "Email and password are required",
+//       });
+//     }
+
+//     // Save customer to DB
+//     const result = await customerModel.saveCustomer(finalData);
+
+//     res.json({
+//       success: true,
+//       msg: "Customer saved successfully",
+//       data: result,
+//     });
+//   } catch (error) {
+//     console.error("❌ Final submit error:", error);
+//     res.status(500).json({
+//       success: false,
+//       msg: "Error saving data",
+//       error: error.message,
+//     });
+//   }
+// };
+
+const { saveCustomer } = require("../models/customerModel");
+
 exports.finalSubmit = async (req, res) => {
   try {
-    console.log("📥 Session data:", req.session);
-    console.log("📥 Body data:", req.body);
+    // ✅ Ensure session has required data
+    if (!req.session.email || !req.session.password) {
+      return res.status(400).json({
+        success: false,
+        msg: "Session expired. Please restart onboarding.",
+      });
+    }
 
-    const data = {
-      email: req.body.email || req.session.email,
-      password: req.body.password || req.session.password,
+    // ✅ Build final data from session only
+    const finalData = {
+      email: req.session.email,
+      password: req.session.password, // ✅ hashed from Step 1
       full_name: req.body.full_name || req.session.full_name,
       dob: req.body.dob || req.session.dob,
       gender: req.body.gender || req.session.gender,
       mobile: req.body.mobile || req.session.mobile,
-      city: req.body.city || req.session.city,
-      state: req.body.state || req.session.state,
-      postal: req.body.postal || req.session.postal,
-      country: req.body.country || req.session.country,
-      address1: req.body.address1 || req.session.address1,
-      address2: req.body.address2 || req.session.address2,
+      city: req.session.city,
+      state: req.session.state,
+      postal: req.session.postal,
+      country: req.session.country,
+      address1: req.session.address1,
+      address2: req.session.address2,
       id_file: req.session.id_file,
       selfie: req.session.selfie,
-      security_question: req.body.security_question || req.session.security_question,
-      security_answer: req.body.security_answer || req.session.security_answer,
-      is_2fa: req.session.is_2fa || 0,
-      is_2fa_verified: req.session.is_2fa_verified || 0,
-      agreed: req.body.agreed || req.session.agreed || 0
+      security_question: req.session.security_question,
+      security_answer: req.session.security_answer,
+      is_2fa: req.session.is_2fa,
+      agreed: req.session.agreed,
     };
 
-    console.log("📤 Saving customer data:", data);
+    // ✅ Save to DB
+    const customerId = await saveCustomer(finalData);
 
-    const customerId = await saveCustomer(data);
+    // ✅ Clear session
+    req.session.destroy();
 
-    res.json({ success: true, msg: "Final submission complete", customerId });
-  } catch (err) {
-    console.error("❌ Final submit DB error:", err);
+    return res.json({
+      success: true,
+      msg: "Customer saved successfully",
+      customerId,
+    });
+
+  } catch (error) {
+    console.error("❌ Final submit error:", error);
     res.status(500).json({
       success: false,
       msg: "Error saving data",
-      error: err.sqlMessage || err.message
+      error: error.message,
     });
   }
 };

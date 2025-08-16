@@ -1,18 +1,18 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import TimeValidation from "./pages/TimeValidation";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import MultiStepForm from "./Pages/MultiStepForm";
+
 
 function App() {
   return (
-    
     <Routes>
-       <Route path="/" element={<Register />} />
+      <Route path="/" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/timevalidation" element={<TimeValidation />} />
-      <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+      <Route path="/multi-step" element={<MultiStepForm />} />{" "}
+      {/* Added route */}
     </Routes>
-   
   );
 }
 

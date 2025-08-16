@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+<<<<<<< HEAD
 // import api from "../api"; // Adjust path
 
+=======
+import api from "../api"; // Adjust path
+>>>>>>> 46802584a7abdcd0b65d8a32bf746a6ed8b8a09f
 
 const MultiStepForm = () => {
   const [step, setStep] = useState(1);

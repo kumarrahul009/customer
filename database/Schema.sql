@@ -27,3 +27,19 @@ CREATE TABLE IF NOT EXISTS customers (
   agreed BOOLEAN,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 3. Create Timedeposit Table
+CREATE TABLE IF NOT EXISTS timedeposit (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+  deposit_id VARCHAR(20) UNIQUE,
+  amount DECIMAL(12,2),
+  term INT, -- in months
+  apy DECIMAL(5,2),
+  payout_type ENUM('atMaturity','monthly'),
+  start_date DATE,
+  maturity_date DATE,
+  projected_interest DECIMAL(12,2),
+  projected_payout DECIMAL(12,2),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

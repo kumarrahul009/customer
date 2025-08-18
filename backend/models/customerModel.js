@@ -1,4 +1,4 @@
-const db = require('./db'); 
+const pool = require('./db'); 
 
 async function saveCustomer(data) {
   const sql = `
@@ -23,15 +23,15 @@ async function saveCustomer(data) {
     data.country,
     data.address1,
     data.address2,
-    data.id_file || null,
-    data.selfie || null,
+    data.id_file,
+    data.selfie ,
     data.security_question || null,
     data.security_answer || null,
     data.is_2fa || 0,
     data.agreed || 0
   ];
 
-  const [result] = await db.query(sql, values);
+const [result] = await pool.query(sql, values);
   return result.insertId;
 }
 

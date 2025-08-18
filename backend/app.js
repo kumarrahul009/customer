@@ -5,6 +5,10 @@ const path = require("path");
 require("dotenv").config();
 
 const onboardingRoutes = require("./routes/onboardingRoutes");
+const depositRoutes = require("./routes/depositRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
+
+
 const app = express();
 
 // Middleware
@@ -27,11 +31,21 @@ app.use(
 
 // ✅ Register API routes BEFORE React build serving
 app.use("/api/onboarding", onboardingRoutes);
+app.use("/api/deposits", depositRoutes);
+
+
+// Error Middleware
+app.use(errorHandler);
 
 // ✅ Serve frontend build (after all APIs)
 app.use(express.static(path.join(__dirname, "../customer/dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../customer/dist/index.html"));
+});
+
+app.post("/api/deposits", (req, res) => {
+  console.log("Received:", req.body);
+  res.json({ success: true, data: req.body });
 });
 
 // Start the server

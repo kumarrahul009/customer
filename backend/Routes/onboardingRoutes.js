@@ -3,6 +3,8 @@ const router = express.Router();
 const upload = require("../middleware/upload");
 const controller = require("../controllers/onboardingController");
 
+
+
 // Debug log to confirm controller loaded
 console.log("Loaded controller functions:", Object.keys(controller));
 

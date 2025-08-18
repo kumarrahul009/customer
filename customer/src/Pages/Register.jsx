@@ -7,12 +7,12 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 
-import uploadIdIcon from "../assets/imges/img.png";
-import DragDropIcon from "../assets/imges/Drop&Drag.png";
-import photoUploadIcon from "../assets/imges/camera.svg";
-import cameraIcon from "../assets/imges/upload.svg";
-import editIcon from "../assets/imges/Edit.png";
-import tick from "../assets/imges/tick.jpg";
+import uploadIdIcon from "../assets/images/img.png";
+import DragDropIcon from "../assets/images/Drop&Drag.png";
+import photoUploadIcon from "../assets/images/camera.svg";
+import cameraIcon from "../assets/images/upload.svg";
+import editIcon from "../assets/images/Edit.png";
+import tick from "../assets/images/tick.jpg";
 import { submitStep1 } from "../api/onboarding";
 import { sendOTP } from "../api/onboarding";
 import { saveAddress } from "../api/onboarding";
@@ -78,15 +78,142 @@ const Register = () => {
     }
   };
 
-  const verifyOTP = () => {
-    const otp = otpRefs.current.map((input) => input.value).join("");
-    if (otp.length === 6) {
-      setStep(4); // Go to next step
+   // Error states
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullName: "",
+    dob: "",
+    gender: "",
+    mobile: "",
+    otp: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    postal: "",
+    country: "",
+    idFile: "",
+    selfie: "",
+    securityQuestion: "",
+    securityAnswer: "",
+    terms: ""
+  });
+
+  const validateStep1 = () => {
+    let valid = true;
+    const newErrors = {...errors};
+
+    // Email validation
+    if (!email) {
+      newErrors.email = "Email is required";
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email";
+      valid = false;
     } else {
-      alert("Please enter all 6 digits");
+      newErrors.email = "";
     }
+
+    // Password validation
+    if (!password) {
+      newErrors.password = "Password is required";
+      valid = false;
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+      valid = false;
+    } else if (!/[A-Z]/.test(password)) {
+      newErrors.password = "Password must contain at least one uppercase letter";
+      valid = false;
+    } else if (!/[0-9]/.test(password)) {
+      newErrors.password = "Password must contain at least one number";
+      valid = false;
+    } else if (!/[!@#$%^&*]/.test(password)) {
+      newErrors.password = "Password must contain at least one special character";
+      valid = false;
+    } else {
+      newErrors.password = "";
+    }
+
+    // Confirm password validation
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+      valid = false;
+    } else {
+      newErrors.confirmPassword = "";
+    }
+
+    // Terms agreement
+    if (!agreed) {
+      newErrors.terms = "You must agree to the terms and conditions";
+      valid = false;
+    } else {
+      newErrors.terms = "";
+    }
+
+    setErrors(newErrors);
+    return valid;
   };
-  
+
+  const validateStep2 = () => {
+    let valid = true;
+    const newErrors = {...errors};
+
+    if (!fullName) {
+      newErrors.fullName = "Full name is required";
+      valid = false;
+    } else {
+      newErrors.fullName = "";
+    }
+
+    if (!dob) {
+      newErrors.dob = "Date of birth is required";
+      valid = false;
+    } else {
+      // Additional age validation if needed
+      newErrors.dob = "";
+    }
+
+    if (!gender) {
+      newErrors.gender = "Please select your gender";
+      valid = false;
+    } else {
+      newErrors.gender = "";
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const validateStep3 = () => {
+    let valid = true;
+    const newErrors = {...errors};
+
+    if (!mobile) {
+      newErrors.mobile = "Mobile number is required";
+      valid = false;
+    } else if (!/^\d{10}$/.test(mobile)) {
+      newErrors.mobile = "Please enter a valid 10-digit mobile number";
+      valid = false;
+    } else {
+      newErrors.mobile = "";
+    }
+
+    if (showOtp) {
+      const otpValue = otpRefs.current.map((input) => input?.value).join("");
+      if (otpValue.length !== 6) {
+        newErrors.otp = "Please enter all 6 digits of the OTP";
+        valid = false;
+      } else {
+        newErrors.otp = "";
+      }
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   const totalSteps = 10;
 
   const handleOpenCamera = () => {
@@ -148,26 +275,22 @@ const Register = () => {
           onSubmit={async (e) => {
             e.preventDefault();
             
-            // ✅ Check before calling backend
-            if (!email || !password || !confirmPassword || !agreed) {
-              alert("Please fill all fields and agree to terms");
-              return;
-            }
-            if (password !== confirmPassword) {
-              alert("❌ Password and Confirm Password do not match");
-              return;
-            }
-            try {
-              const res = await submitStep1({ email, password, confirmPassword, agreed });
-
-              console.log("✅ Step 1 response:", res.data);
-
-              setStep(2); // go to next step
-            } catch (err) {
-              console.error("❌ Step 1 error:", err.response?.data || err.message);
-              alert(err.response?.data?.msg || "Step 1 failed");
-            }
-          }}
+        if (validateStep1()) {
+          try {
+            const res = await submitStep1({ email, password, confirmPassword, agreed });
+            console.log("✅ Step 1 response:", res.data);
+            setStep(2);
+          } catch (err) {
+            console.error("❌ Step 1 error:", err.response?.data || err.message);
+            // Handle API errors
+            setErrors({
+              ...errors,
+              email: err.response?.data?.errors?.email || "",
+              password: err.response?.data?.errors?.password || ""
+            });
+          }
+        }
+      }}
           className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full border border-emerald-100"
         >
           <div className="flex justify-between items-center mb-4">
@@ -187,11 +310,15 @@ const Register = () => {
             <input
               type="email"
               name="email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className={`w-full px-4 py-2 border ${errors.email ? "border-red-500" : "border-gray-300"} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+               onChange={(e) => {
+            setEmail(e.target.value);
+            if (errors.email) setErrors({...errors, email: ""});
+          }}
+          />
+          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
           <div className="mb-4">
@@ -200,10 +327,13 @@ const Register = () => {
               <input
                 type="password"
                 name="password"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className={`w-full px-4 py-2 pr-10 border ${errors.password ? "border-red-500" : "border-gray-300"} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                 onChange={(e) => {
+              setPassword(e.target.value);
+              if (errors.password) setErrors({...errors, password: ""});
+            }}
               />
               
               <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
@@ -233,6 +363,7 @@ const Register = () => {
                 </svg>
               </div>
             </div>
+            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
           </div>
 
           <div className="mb-4">
@@ -240,11 +371,15 @@ const Register = () => {
             <input
               type="password"
               name="confirmPassword"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className={`w-full px-4 py-2 border ${errors.confirmPassword ? "border-red-500" : "border-gray-300"} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               placeholder="Confirm Password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+               onChange={(e) => {
+            setConfirmPassword(e.target.value);
+            if (errors.confirmPassword) setErrors({...errors, confirmPassword: ""});
+          }}
             />
+             {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
             <div className="mt-2 text-xs text-gray-600">
               <p className="font-medium mb-1">Password must contain:</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 ml-4">
@@ -262,12 +397,16 @@ const Register = () => {
               name="terms"
               type="checkbox"
               checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
+              onChange={(e) => {
+            setAgreed(e.target.checked);
+            if (errors.terms) setErrors({...errors, terms: ""});
+          }}
               className="mt-1 mr-2"
             />
             <label htmlFor="terms" className="text-sm text-gray-700">
               I agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>
             </label>
+             {errors.terms && <p className="mt-1 text-sm text-red-600">{errors.terms}</p>}
           </div>
 
           <div className="flex justify-between mt-6">
@@ -292,22 +431,68 @@ const Register = () => {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            try {
-              const res = await axios.post(`${API_BASE}/step2`, {
-                full_name: fullName,
-                dob,
-                gender,
-              });
-              if (res.data.msg === "Step 2 success") {
-                setStep(3);
-              } else {
-                alert(res.data.msg || "Step 2 failed");
-              }
-            } catch (err) {
-              console.error("❌ Step 2 error:", err.response?.data || err.message);
-              alert(err.response?.data?.msg || "Server error during personal info step");
-            }
-          }}
+             // Validate form
+      const newErrors = {};
+      let isValid = true;
+
+      if (!fullName.trim()) {
+        newErrors.fullName = "Full name is required";
+        isValid = false;
+      }
+
+      if (!dob) {
+        newErrors.dob = "Date of birth is required";
+        isValid = false;
+      } else {
+        // Additional age validation (minimum 18 years)
+        const today = new Date();
+        const birthDate = new Date(dob);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+
+        if (age < 18) {
+          newErrors.dob = "You must be at least 18 years old";
+          isValid = false;
+        }
+      }
+
+      if (!gender) {
+        newErrors.gender = "Please select your gender";
+        isValid = false;
+      }
+
+      setErrors({ ...errors, ...newErrors });
+
+      if (isValid) {
+        try {
+          const res = await axios.post(`${API_BASE}/step2`, {
+            full_name: fullName,
+            dob,
+            gender,
+          });
+          
+          if (res.data.msg === "Step 2 success") {
+            setStep(3);
+          } else {
+            setErrors({
+              ...errors,
+              formError: res.data.msg || "Step 2 failed"
+            });
+          }
+        } catch (err) {
+          console.error("Step 2 error:", err.response?.data || err.message);
+          setErrors({
+            ...errors,
+            formError: err.response?.data?.msg || "Server error during personal info step"
+          });
+        }
+      }
+    }}
+
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
           <div className="flex justify-between items-center mb-4">
@@ -321,17 +506,26 @@ const Register = () => {
               style={{ width: `${(step / 10) * 100}%` }}
             />
           </div>
-
+          {errors.formError && (
+      <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+        {errors.formError}
+           </div>
+    )}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
             <input
               type="text"
               name="fullName"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className={`w-full px-4 py-2 border ${errors.fullName ? "border-red-500" : "border-gray-300"} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               placeholder="Enter your full name"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)} required
+            onChange={(e) => {
+            setFullName(e.target.value);
+            if (errors.fullName) setErrors({...errors, fullName: ""});
+          }}
+            required
             />
+            {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
             <p className="text-xs text-gray-500 mt-1">As it appears on your ID document</p>
           </div>
 
@@ -342,9 +536,16 @@ const Register = () => {
               name="dob"
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
               value={dob}
-              onChange={(e) => setDob(e.target.value)}
+               onChange={(e) => {
+          setDob(e.target.value);
+          if (errors.dob) setErrors({...errors, dob: ""});
+        }}
             />
-            <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old</p>
+            {errors.dob ? (
+        <p className="mt-1 text-sm text-red-600">{errors.dob}</p>
+      ) : (
+        <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old</p>
+      )}
           </div>
 
           <div className="mb-4">
@@ -353,13 +554,17 @@ const Register = () => {
               name="gender"
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
               value={gender}
-              onChange={(e) => setGender(e.target.value)}
+             onChange={(e) => {
+          setGender(e.target.value);
+          if (errors.gender) setErrors({...errors, gender: ""});
+        }}
             >
               <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
+             {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
           </div>
 
           <div className="flex justify-between mt-6">
@@ -384,8 +589,10 @@ const Register = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setStep(4);
-          }}
+           if (validateStep3()) {
+          setStep(4);
+        }
+      }}
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
           <div className="flex justify-between items-center mb-4">
@@ -431,40 +638,47 @@ const Register = () => {
                 type="tel"
                 name="mobile"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+              onChange={(e) => {
+            // Allow only numbers and limit to 10 digits
+            const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            setMobile(value);
+            if (errors.mobile) setErrors({...errors, mobile: ""});
+          }}
                 placeholder="Mobile Number"
-                className="w-full px-4 py-2 border border-gray-300 rounded"
+                className={`w-full px-4 py-2 border ${errors.mobile ? "border-red-500" : "border-gray-300"} rounded`}
               />
               <button
                 type="button"
-                onClick={async () => {
-                  if (mobile.length !== 10) {
-                    alert("Enter a valid 10-digit mobile number");
-                    return;
-                  }
+              onClick={async () => {
+            if (!/^\d{10}$/.test(mobile)) {
+              setErrors({...errors, mobile: "Enter a valid 10-digit mobile number"});
+              return;
+            }
+            try {
+              const res = await sendOTP({ mobile });
+              console.log("✅ OTP response:", res.data);
 
-                  try {
-                    const res = await sendOTP({ mobile }); // from api.js
-
-                    console.log("✅ OTP response:", res.data);
-
-                    if (res.data.msg === "OTP sent successfully") {
-                      setShowOtp(true);
-                      alert("OTP sent successfully ✅");
-                    } else {
-                      alert(res.data.msg || "Failed to send OTP");
-                    }
-                  } catch (err) {
-                    console.error("❌ OTP send error:", err.response?.data || err.message);
-                    alert(err.response?.data?.msg || "Failed to send OTP");
-                  }
-                }}
+              if (res.data.msg === "OTP sent successfully") {
+                setShowOtp(true);
+               setErrors({...errors, mobile: ""});
+              } else {
+                setErrors({...errors, mobile: res.data.msg || "Failed to send OTP"});
+              }
+            } catch (err) {
+              console.error("❌ OTP send error:", err.response?.data || err.message);
+               setErrors({...errors, mobile: err.response?.data?.msg || "Failed to send OTP"});
+            }
+          }}
                 className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
               >
                 Send OTP
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
+            {errors.mobile ? (
+        <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
+      ) : (
+        <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
+      )}
           </div>
 
           {/* OTP Verification */}
@@ -481,7 +695,7 @@ const Register = () => {
                   ref={(el) => (otpRefs.current[index] = el)}
                   onChange={(e) => handleOTPChange(e, index)}
                   onKeyDown={(e) => handleOTPKeyDown(e, index)}
-                  className="w-10 h-10 text-center border border-gray-300 rounded text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-10 h-10 text-center border ${errors.otp ? "border-red-500" : "border-gray-300"} rounded text-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
               ))}
               <button
@@ -490,22 +704,43 @@ const Register = () => {
                   try {
                     const res = await axios.post(`${API_BASE}/send-otp`, { mobile });
                     if (res.data.success) {
-                      alert("OTP resent ✅");
+                     setErrors({...errors, otp: ""});
                     }
                   } catch (err) {
-                    alert("Failed to resend OTP");
+                     setErrors({...errors, otp: "Failed to resend OTP"});
                   }
                 }}
                 className="text-sm text-blue-600 hover:underline ml-auto"
               >
                 Resend OTP
               </button>
+              {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}
             </div>
 
             <div className="mt-3">
               <button
                 type="button"
-                onClick={verifyOTP}
+                onClick={async () => {
+              const otp = otpRefs.current.map((input) => input?.value).join("");
+              if (otp.length === 6) {
+                try {
+                  const res = await axios.post(`${API_BASE}/verify-otp`, {
+                    mobile,
+                    otp
+                  });
+                  if (res.data.success) {
+                    setStep(4); // Go to next step
+                  } else {
+                    alert(res.data.msg || "Invalid OTP");
+                  }
+                } catch (err) {
+                  console.error("OTP verification error:", err);
+                  alert("Failed to verify OTP");
+                }
+              } else {
+                alert("Please enter all 6 digits");
+              }
+            }}
                 className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm"
               >
                 Verify OTP
@@ -524,6 +759,13 @@ const Register = () => {
             </button>
             <button
               type="submit"
+              onClick={() => {
+          if (!showOtp) {
+            setStep(4);
+          } else {
+            alert("Please verify OTP first");
+          }
+        }}
               className="bg-emerald-600 text-white py-2 px-6 rounded hover:bg-emerald-700 shadow"
             >
               Continue
@@ -536,22 +778,61 @@ const Register = () => {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            try {
-              const res = await saveAddress({
-                address1,
-                address2,
-                city,
-                state,
-                postal,
-                country,
-              });
-              console.log("✅ Address step response:", res.data);
-              setStep(5);
-            } catch (err) {
-              console.error("❌ Address step error:", err.response?.data || err.message);
-              alert(err.response?.data?.msg || "Address step failed");
-            }
-          }}
+           // Validate required fields
+      let isValid = true;
+      const newErrors = {...errors};
+
+      if (!address1.trim()) {
+        newErrors.address1 = "Permanent address is required";
+        isValid = false;
+      }
+
+      if (!city) {
+        newErrors.city = "City is required";
+        isValid = false;
+      }
+
+      if (!state) {
+        newErrors.state = "State is required";
+        isValid = false;
+      }
+
+      if (!postal.trim()) {
+        newErrors.postal = "Postal code is required";
+        isValid = false;
+      } else if (!/^\d{6}$/.test(postal.trim())) {
+        newErrors.postal = "Postal code must be 6 digits";
+        isValid = false;
+      }
+
+      if (!country) {
+        newErrors.country = "Country is required";
+        isValid = false;
+      }
+
+      setErrors(newErrors);
+
+      if (isValid) {
+        try {
+          const res = await saveAddress({
+            address1,
+            address2,
+            city,
+            state,
+            postal,
+            country,
+          });
+          console.log("✅ Address step response:", res.data);
+          setStep(5);
+        } catch (err) {
+          console.error("❌ Address step error:", err.response?.data || err.message);
+          setErrors({
+            ...errors,
+            formError: err.response?.data?.msg || "Address step failed"
+          });
+        }
+      }
+    }}
           className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full border border-emerald-200"
         >
           <div className="flex justify-between items-center mb-4">
@@ -565,7 +846,11 @@ const Register = () => {
               style={{ width: `${(step / 10) * 100}%` }}
             />
           </div>
-
+          {errors.formError && (
+          <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+            {errors.formError}
+          </div>
+        )}
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-700 mb-1"> Permanent Address </label>
@@ -573,12 +858,34 @@ const Register = () => {
                 name="address1"
                 rows={3}
                 value={address1}
-                onChange={(e) => setAddress1(e.target.value)}
+                onChange={(e) => {
+                setAddress1(e.target.value);
+                if (errors.address1) setErrors({...errors, address1: ""});
+              }}
                 placeholder="Permanent Address"
-                className="w-full px-4 py-2 border border-gray-300 rounded resize-none"
+                className={`w-full px-4 py-2 border ${
+            errors.address1 ? "border-red-500" : "border-gray-300"
+          } rounded resize-none`}
               />
+              {errors.address1 && (
+          <p className="mt-1 text-sm text-red-600">{errors.address1}</p>
+        )}
             </div>
-
+            <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="sameAsPermanent"
+                  className="mr-2"
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setAddress2(address1);
+                    }
+                  }}
+                />
+                <label htmlFor="sameAsPermanent" className="text-sm text-gray-700">
+                  Same as permanent address
+                </label>
+             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">
                 Residence address <span className="text-gray-400">(Optional)</span>
@@ -599,8 +906,28 @@ const Register = () => {
                 <select
                   name="city"
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                  onChange={(e) => {
+               const selectedValue = e.target.value; // Fix: Use selectedValue instead of selectedCity
+            setCity(selectedValue);
+            if (errors.city) setErrors({...errors, city: ""});
+               // Auto-set state and country based on city
+              if (selectedValue === "Chennai") {
+                setState("Tamil Nadu");
+                setCountry("India");
+              } else if (selectedValue === "Bangalore") {
+                setState("Karnataka");
+                setCountry("India");
+              } else if (selectedValue === "Mumbai") {
+                setState("Maharashtra");
+                setCountry("India");
+              } else if (selectedValue === "Delhi") {
+                setState("Delhi");
+                setCountry("India");
+              }
+            }}
+            className={`w-full px-4 py-2 border ${
+              errors.city ? "border-red-500" : "border-gray-300"
+            } rounded`}
                 >
                   <option value="">Select City</option>
                   <option value="Chennai">Chennai</option>
@@ -608,6 +935,9 @@ const Register = () => {
                   <option value="Mumbai">Mumbai</option>
                   <option value="Delhi">Delhi</option>
                 </select>
+                 {errors.city && (
+            <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+          )}
               </div>
 
               <div>
@@ -615,8 +945,13 @@ const Register = () => {
                 <select
                   name="state"
                   value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                  onChange={(e) => {
+              setState(e.target.value);
+              if (errors.state) setErrors({...errors, state: ""});
+            }}
+            className={`w-full px-4 py-2 border ${
+              errors.state ? "border-red-500" : "border-gray-300"
+            } rounded`}
                 >
                   <option value="">Select State</option>
                   <option value="Tamil Nadu">Tamil Nadu</option>
@@ -624,6 +959,9 @@ const Register = () => {
                   <option value="Maharashtra">Maharashtra</option>
                   <option value="Delhi">Delhi</option>
                 </select>
+                {errors.state && (
+            <p className="mt-1 text-sm text-red-600">{errors.state}</p>
+          )}
               </div>
 
               <div>
@@ -632,10 +970,20 @@ const Register = () => {
                   type="text"
                   name="postal"
                   value={postal}
-                  placeholder="Postal code"
-                  onChange={(e) => setPostal(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                  placeholder="Enter your 6-digit postal code"
+                  onChange={(e) => {
+            // Allow only numbers and limit to 6 digits
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setPostal(value);
+            if (errors.postal) setErrors({...errors, postal: ""});
+          }}
+            className={`w-full px-4 py-2 border ${
+              errors.postal ? "border-red-500" : "border-gray-300"
+            } rounded`}
                 />
+                {errors.postal && (
+            <p className="mt-1 text-sm text-red-600">{errors.postal}</p>
+          )}
               </div>
 
               <div>
@@ -643,8 +991,13 @@ const Register = () => {
                 <select
                   name="country"
                   value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded"
+                 onChange={(e) => {
+              setCountry(e.target.value);
+              if (errors.country) setErrors({...errors, country: ""});
+            }}
+            className={`w-full px-4 py-2 border ${
+              errors.country ? "border-red-500" : "border-gray-300"
+            } rounded`}
                 >
                   <option value="">Select Country</option>
                   <option value="India">India</option>
@@ -652,6 +1005,9 @@ const Register = () => {
                   <option value="UK">United Kingdom</option>
                   <option value="Canada">Canada</option>
                 </select>
+                {errors.country && (
+            <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+          )}
               </div>
             </div>
           </div>
@@ -679,24 +1035,31 @@ const Register = () => {
           onSubmit={async (e) => {
             e.preventDefault();
 
-            if (!idFile || !selfie) {
-              alert("Please upload both ID and selfie");
-              return;
-            }
+         if (!idFile) {
+        setErrors({...errors, idFile: "Please upload your ID document"});
+        return;
+      }
+      if (!selfie) {
+        setErrors({...errors, selfie: "Please upload your selfie"});
+        return;
+      }
 
-            const formData = new FormData();
-            formData.append("id_file", idFile);
-            formData.append("selfie", selfie);
+      const formData = new FormData();
+      formData.append("id_file", idFile);
+      formData.append("selfie", selfie);
 
-            try {
-              const res = await uploadDocuments(formData);
-              console.log("✅ Upload success:", res.data);
-              setStep(6); // move to next step
-            } catch (err) {
-              console.error("❌ Upload error:", err.response?.data || err.message);
-              alert(err.response?.data?.msg || "File upload failed");
-            }
-          }}
+      try {
+        const res = await uploadDocuments(formData);
+        console.log("✅ Upload success:", res.data);
+        setStep(6);
+      } catch (err) {
+        console.error("❌ Upload error:", err.response?.data || err.message);
+        setErrors({
+          ...errors,
+          formError: err.response?.data?.msg || "File upload failed"
+        });
+      }
+    }}
           className="w-125 max-w-2xl"
         >
           <div className="border border-gray-300 rounded-2xl p-6 shadow-md bg-white">
@@ -711,7 +1074,11 @@ const Register = () => {
                 style={{ width: `${(step / 10) * 100}%` }}
               />
             </div>
-
+             {errors.formError && (
+        <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.formError}
+        </div>
+      )}
             <p className="text-sm text-gray-700 mb-6">
               To comply with ABCD Bank regulation and protect your account, we need to verify your identity using a government-issued ID and a selfie.
             </p>
@@ -723,7 +1090,22 @@ const Register = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Upload Government ID</label>
                   <div className="border border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50">
+                     {idFile ? (
+                <div className="mb-2">
+                  <img 
+                    src={URL.createObjectURL(idFile)} 
+                    alt="ID Preview" 
+                    className="mx-auto max-h-32 object-contain mb-2"
+                  />
+                  <p className="text-sm text-gray-600 truncate">{idFile.name}</p>
+                </div>
+              ) : (
+                <>
                     <img src={uploadIdIcon} alt="Upload ID Icon" className="mx-auto w-10 h-10 mb-2" />
+                      <p className="text-sm text-gray-500 mb-2">Supported formats: JPG, PNG, PDF</p>
+                </>
+              )}
+              <div className="flex justify-center gap-2">
                     <button
                       type="button"
                       onClick={() => document.getElementById("cameraUploadID").click()}
@@ -731,6 +1113,8 @@ const Register = () => {
                     >
                       Browser File
                     </button>
+                    </div>
+                     {errors.idFile && <p className="mt-2 text-sm text-red-600">{errors.idFile}</p>}
                   </div>
                 </div>
 
@@ -738,14 +1122,28 @@ const Register = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Live Photo</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400">
+                    {selfie ? (
+                <div className="mb-2">
+                  <img 
+                    src={URL.createObjectURL(selfie)} 
+                    alt="Selfie Preview" 
+                    className="mx-auto max-h-32 object-contain mb-2"
+                  />
+                  <p className="text-sm text-gray-600 truncate">{selfie.name}</p>
+                </div>
+              ) : (
+                <>
                     <img src={DragDropIcon} alt="Drag & Drop Icon" className="mx-auto w-10 h-10 mb-4" />
+                     <p className="text-sm text-gray-500 mb-2">Supported formats: JPG, PNG</p>
+                </>
+              )}
                     <div className="flex flex-col gap-3 items-center">
                       <button
                         type="button"
                         onClick={() => document.getElementById("cameraUploadSelfie").click()}
                         className="bg-blue-100 text-blue-700 font-medium py-1.5 px-4 rounded hover:bg-blue-200 transition w-full"
                       >
-                        Use Camera
+                        Take Selfie
                       </button>
                       <button
                         type="button"
@@ -755,6 +1153,7 @@ const Register = () => {
                         Browse Files
                       </button>
                     </div>
+                      {errors.selfie && <p className="mt-2 text-sm text-red-600">{errors.selfie}</p>}
                   </div>
                 </div>
               </div>
@@ -768,8 +1167,13 @@ const Register = () => {
                 capture="environment"
                 className="hidden"
                 id="cameraUploadID"
-                onChange={(e) => setIdFile(e.target.files[0])}
-              />
+                onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setIdFile(e.target.files[0]);
+              if (errors.idFile) setErrors({...errors, idFile: ""});
+            }
+          }}
+        />
 
               {/* Front camera for selfie */}
               <input
@@ -779,7 +1183,12 @@ const Register = () => {
                 capture="user"
                 className="hidden"
                 id="cameraUploadSelfie"
-                onChange={(e) => setSelfie(e.target.files[0])}
+               onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setSelfie(e.target.files[0]);
+              if (errors.selfie) setErrors({...errors, selfie: ""});
+            }
+          }}
               />
 
               {/* Browse file input */}
@@ -789,13 +1198,15 @@ const Register = () => {
                 accept="image/*,.pdf"
                 className="hidden"
                 id="fileUploadSelfie"
-                onChange={(e) => setSelfie(e.target.files[0])}
+                 onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setSelfie(e.target.files[0]);
+              if (errors.selfie) setErrors({...errors, selfie: ""});
+            }
+          }}
               />
 
-              {/* File Previews */}
-              {idFile && <p className="text-sm text-green-600 mt-2">ID Selected: {idFile.name}</p>}
-              {selfie && <p className="text-sm text-green-600 mt-2">Selfie Selected: {selfie.name}</p>}
-            </div>
+         </div>
 
             <div className="bg-emerald-50 p-4 border border-gray-200 rounded-lg text-sm text-gray-600 mb-6">
               Your data is encrypted and securely stored. We do not share it with third-party sites without your consent.
@@ -824,16 +1235,14 @@ const Register = () => {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-
-            console.log("📝 Debug — Security form state:", {
-              securityQuestion,
-              securityAnswer
-            });
-
-            if (!securityQuestion || !securityAnswer) {
-              alert("Please fill in security question and answer");
-              return;
-            }
+        if (!securityQuestion) {
+          setErrors({...errors, securityQuestion: "Please select a security question"});
+          return;
+        }
+        if (!securityAnswer) {
+          setErrors({...errors, securityAnswer: "Please provide an answer"});
+          return;
+        }
 
             try {
               console.log("📤 Sending payload to backend:", {
@@ -857,7 +1266,7 @@ const Register = () => {
           }}
           className="w-125 max-w-2xl"
         >
-          <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
+          <div className="border border-gray-300 rounded-2xl p-6 shadow-sm bg-white relative">
             
             <div className="absolute top-4 right-4 text-sm text-gray-500">Step 6 / 10</div>
 
@@ -896,8 +1305,11 @@ const Register = () => {
               <select
                 name="securityQuestion"
                 value={securityQuestion}
-                onChange={(e) => setSecurityQuestion(e.target.value)}
-                className="w-full p-2 border rounded mb-4 text-sm"
+                onChange={(e) => {
+                setSecurityQuestion(e.target.value);
+                if (errors.securityQuestion) setErrors({...errors, securityQuestion: ""});
+              }}
+                className={`w-full p-2 border ${errors.securityQuestion ? "border-red-500" : "border-gray-300"} rounded mb-4 text-sm`}
               >
                 <option value="">Select a security question</option>
                 <option value="pet">What is the name of your first pet?</option>
@@ -905,15 +1317,19 @@ const Register = () => {
                 <option value="city">In what city were you born?</option>
                 <option value="nickname">What was your childhood nickname?</option>
               </select>
-
+{errors.securityQuestion && <p className="text-sm text-red-600 -mt-3 mb-3">{errors.securityQuestion}</p>}
               <input
                 type="text"
                 name="securityAnswer"
                 value={securityAnswer}
-                onChange={(e) => setSecurityAnswer(e.target.value)}
-                placeholder="Your answer"
-                className="w-full p-2 border rounded text-sm"
+                 onChange={(e) => {
+                setSecurityAnswer(e.target.value);
+                if (errors.securityAnswer) setErrors({...errors, securityAnswer: ""});
+              }}
+              placeholder="Your answer"
+              className={`w-full p-2 border ${errors.securityAnswer ? "border-red-500" : "border-gray-300"} rounded text-sm`}
               />
+              {errors.securityAnswer && <p className="text-sm text-red-600 mt-1">{errors.securityAnswer}</p>}
               <p className="text-xs text-gray-500 mt-1">Your answer is case-sensitive</p>
             </div>
 
@@ -936,75 +1352,24 @@ const Register = () => {
   </form>
 )}
 
-{/* {step === 6 && (
-  <form
-    onSubmit={async (e) => {
-      e.preventDefault();
-
-      if (!puzzleSolved) {
-        alert("Please complete the puzzle to continue");
-        return;
-      }
-
-      try {
-        const res = await setSecurity({ puzzleVerified: true }); // send a flag
-        console.log("✅ Puzzle 2FA success:", res.data);
-        if (res.data.msg?.toLowerCase().includes("success")) {
-          setStep(8);
-        } else {
-          alert(res.data.msg || "Step 6 failed");
-        }
-      } catch (err) {
-        console.error("❌ Puzzle 2FA error:", err.response?.data || err.message);
-        alert(err.response?.data?.msg || "Server error during puzzle verification");
-      }
-    }}
-    className="w-125 max-w-2xl"
-  >
-    <div className="border border-gray-300 rounded-2xl p-6 shadow-sm bg-white relative">
-      <div className="absolute top-4 right-4 text-sm text-gray-500">Step 6 / 10</div>
-
-      <h2 className="text-2xl font-extrabold text-blue-800 mb-4">Complete the Puzzle</h2>
-      <p className="text-sm text-gray-700 mb-6">
-        Verify you’re human by completing this quick puzzle.
-      </p>
-
-      {/* Puzzle Component *
-      <PuzzleCaptcha onComplete={() => setPuzzleSolved(true)} />
-
-      <div className="flex justify-between mt-6">
-        <button
-          type="button"
-          onClick={() => setStep(5)}
-          className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
-        >
-          Back
-        </button>
-        <button
-          type="submit"
-          className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
-        >
-          Continue
-        </button>
-      </div>
-    </div>
-  </form>
-)} */}
-
 
 {step === 7 && (
   <form
     onSubmit={(e) => {
   e.preventDefault();
-  if (consent1 && consent2 && consent3 && consent4) {
-    setStep(8);
-  } else {
-    alert("Please accept all terms");
-  }
-}}
+  const newErrors = {...errors};
+      
+      if (!consent1 || !consent2 || !consent3 || !consent4) {
+        newErrors.terms = "Please accept all terms to continue";
+        setErrors(newErrors);
+      } else {
+        setErrors({...errors, terms: ""});
+        setStep(8);
+      }
+    }}
     className="w-125 max-w-2xl"
   >
-    <div className="border border-gray-300  rounded-2xl rounded p-6 shadow-sm bg-white relative text-center">
+    <div className="border border-gray-300  rounded-2xl p-6 shadow-sm bg-white relative text-center">
       <div className="absolute top-4 right-4 text-sm text-gray-500">Step 7/10</div>
 
       <h2 className="text-2xl font-extrabold text-blue-800 mb-2">Terms & Condition</h2>
@@ -1015,7 +1380,11 @@ const Register = () => {
           style={{ width: `${(step / 10) * 100}%` }}
         />
       </div>
-
+      {errors.terms && (
+        <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.terms}
+        </div>
+      )}
       <p className="text-sm text-gray-700 mb-6">
         Please review and accept our terms and conditions to continue.
       </p>
@@ -1055,8 +1424,11 @@ const Register = () => {
       type="checkbox" 
       name="termsConsent"
       checked={consent1} 
-      onChange={(e) => setConsent1(e.target.checked)} 
-      className="mt-1" 
+      onChange={(e) => {
+              setConsent1(e.target.checked);
+              if (errors.terms) setErrors({...errors, terms: ""});
+            }} 
+            className="mt-1" 
     />
     <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Terms & Conditions</a>.</span>
   </label>
@@ -1065,7 +1437,10 @@ const Register = () => {
       type="checkbox" 
       name="privacyConsent"
       checked={consent2} 
-      onChange={(e) => setConsent2(e.target.checked)} 
+      onChange={(e) => {
+              setConsent2(e.target.checked);
+              if (errors.terms) setErrors({...errors, terms: ""});
+            }} 
       className="mt-1" 
     />
     <span>I have read and agree to the <a href="#" className="text-emerald-600 underline hover:text-emerald-700">Privacy policy</a>.</span>
@@ -1075,7 +1450,10 @@ const Register = () => {
       type="checkbox" 
       name="communicationsConsent"
       checked={consent3} 
-      onChange={(e) => setConsent3(e.target.checked)} 
+        onChange={(e) => {
+              setConsent3(e.target.checked);
+              if (errors.terms) setErrors({...errors, terms: ""});
+            }} 
       className="mt-1" 
     />
     <span>I consent to receive electronic communications from ABCD Bank including account statements, notices, and marketing communication.</span>
@@ -1085,7 +1463,10 @@ const Register = () => {
       type="checkbox" 
       name="accuracyConsent"
       checked={consent4} 
-      onChange={(e) => setConsent4(e.target.checked)} 
+      onChange={(e) => {
+              setConsent4(e.target.checked);
+              if (errors.terms) setErrors({...errors, terms: ""});
+            }} 
       className="mt-1" 
     />
     <span>I confirm that the information I provide is accurate and correct.</span>
@@ -1117,18 +1498,22 @@ const Register = () => {
   <form
     onSubmit={async (e) => {
   e.preventDefault();
-  if (!fullName) {
-  alert("Full name is missing — go back to Step 2 and fill it in.");
-  return;
-}
- try {
+const newErrors = {...errors};
+      
+      if (!fullName) {
+        newErrors.fullName = "Full name is missing — go back to Step 2 and fill it in.";
+        setErrors(newErrors);
+        return;
+      }
+
+      try {
         const res = await axios.post(
           `${API_BASE}/submit`,
           {
             email,
             password,
             confirm_password: confirmPassword,
-            full_name: fullName, // ✅ map correctly
+            full_name: fullName,
             dob,
             gender,
             mobile,
@@ -1138,8 +1523,8 @@ const Register = () => {
             state,
             postal,
             country,
-            security_question: securityQuestion, // ✅ match backend
-            security_answer: securityAnswer,     // ✅ match backend
+            security_question: securityQuestion,
+            security_answer: securityAnswer,
             agreed: consent1 && consent2 && consent3 && consent4 ? 1 : 0
           },
           { withCredentials: true }
@@ -1148,17 +1533,19 @@ const Register = () => {
         if (res.data.success) {
           setStep(10);
         } else {
-          alert(res.data.msg || "Submission failed");
+          newErrors.formError = res.data.msg || "Submission failed";
+          setErrors(newErrors);
         }
       } catch (err) {
         console.error("❌ Final submit error:", err.response?.data || err.message);
-        alert(err.response?.data?.msg || "Server error during final submission");
+        newErrors.formError = err.response?.data?.msg || "Server error during final submission";
+        setErrors(newErrors);
       }
     }}
 
     className="w-125 max-w-2xl"
   >
-    <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
+    <div className="border border-gray-300 rounded-2xl p-6 shadow-sm bg-white relative">
       <div className="absolute top-4 right-4 text-sm text-gray-500">Step 8 / 10</div>
 
       <h2 className="text-2xl font-extrabold text-blue-800 ">Review & Submit</h2>
@@ -1168,7 +1555,17 @@ const Register = () => {
           style={{ width: `${(step / 10) * 100}%` }}
         />
       </div>
+      {errors.fullName && (
+        <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.fullName}
+        </div>
+      )}
 
+      {errors.formError && (
+        <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.formError}
+        </div>
+      )}
       <p className="text-sm text-gray-700 text-center mb-6">
         Please review your information before submitting your application.
       </p>
@@ -1279,7 +1676,7 @@ const Register = () => {
 {step === 10 && (
   
   <div className="w-150 max-w-2xl mx-auto">
-    <div className="border border-gray-300 rounded-2xl rounded p-6 shadow-sm bg-white relative">
+    <div className="border border-gray-300 rounded-2xl p-6 shadow-sm bg-white relative">
       <div className="absolute top-4 right-4 text-sm text-gray-500">Step 10 / 10</div>
 
      

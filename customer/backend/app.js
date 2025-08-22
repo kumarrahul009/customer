@@ -4,30 +4,52 @@ const session = require("express-session");
 const path = require("path");
 require("dotenv").config();
 
-const onboardingRoutes = require("./routes/onboardingRoutes");
-const app = express();
+const onboardingRoutes = require("./Routes/onboardingRoutes");
+const depositRoutes = require("./Routes/depositRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
 
-// Session setup
+
+const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:5173", 
+    credentials: true,
+  })
+);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secretKey",
+    secret: "yourSecret",
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, secure: false, maxAge: 60 * 60 * 1000 },
+    cookie: { secure: false, httpOnly: true, maxAge: 3600000 },
   })
 );
 
-app.use(express.json());
-
-// API routes
 app.use("/api/onboarding", onboardingRoutes);
+app.use("/api/deposits", depositRoutes);
 
-// Serve React build folder
+app.use(errorHandler);
+
 app.use(express.static(path.join(__dirname, "../customer/dist")));
-
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../customer/dist/index.html"));
 });
 
+app.post("/api/deposits", (req, res) => {
+  console.log("Received:", req.body);
+  res.json({ success: true, data: req.body });
+});
+
+app.use(express.static(path.join(__dirname, "customer", "dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "customer", "dist", "index.html"));
+});
+
+
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`App running on http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(` App running at http://localhost:${port}`);
+});

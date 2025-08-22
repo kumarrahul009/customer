@@ -20,4 +20,4 @@ exports.registerStep1 = async (req, res) => {
   res.json({ msg: "Step 1 success" });
 };
 
-// ... (keep rest of your steps as they are)
+
